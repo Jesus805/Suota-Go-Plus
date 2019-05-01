@@ -1,6 +1,22 @@
 #ifndef _USER_EXTRACTOR_DEF_H_
 #define _USER_EXTRACTOR_DEF_H_
 
+/*
+ * DEFINES
+ ****************************************************************************************
+ */
+
+#define OTPC_MODE_STDBY 0x00
+#define OTPC_MODE_MREAD 0x01
+
+#define BLOB_ADDR 0x47000
+#define KEY_ADDR 0x47120
+
+/*
+ * FUNCTION DECLARATIONS
+ ****************************************************************************************
+ */
+
 /**
  ****************************************************************************************
  * @brief Enable OTP for reading.
