@@ -66,7 +66,7 @@ void init_blob()
 */
 void init_key()
 {
-	  struct custs1_val_ntf_req* req = KE_MSG_ALLOC_DYN(CUSTS1_VAL_NTF_REQ,
+    struct custs1_val_ntf_req* req = KE_MSG_ALLOC_DYN(CUSTS1_VAL_NTF_REQ,
                                                       TASK_CUSTS1,
                                                       TASK_APP,
                                                       custs1_val_ntf_req,
