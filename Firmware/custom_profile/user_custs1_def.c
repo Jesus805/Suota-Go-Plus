@@ -49,7 +49,7 @@ struct attm_desc_128 custs1_att_db[CUST1_IDX_NB] =
     [CUST1_IDX_BLOB_VAL]           = {CUST1_BLOB_UUID_128, ATT_UUID_128_LEN, PERM(RD, ENABLE),
                                       DEF_CUST1_BLOB_CHAR_LEN, DEF_CUST1_BLOB_CHAR_LEN, (uint8_t*)0x40100},
 
-	// Blob Extract Characteristic User Description
+    // Blob Extract Characteristic User Description
     [CUST1_IDX_BLOB_USER_DESC]     = {(uint8_t*)&att_decl_user_desc, ATT_UUID_16_LEN, PERM(RD, ENABLE),
                                       sizeof(CUST1_BLOB_USER_DESC) - 1, sizeof(CUST1_BLOB_USER_DESC) - 1, (uint8_t*)CUST1_BLOB_USER_DESC}
 };
