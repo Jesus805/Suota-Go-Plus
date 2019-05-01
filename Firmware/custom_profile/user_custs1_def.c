@@ -9,6 +9,8 @@ static uint8_t CUST1_KEY_UUID_128[ATT_UUID_128_LEN]         = DEF_CUST1_KEY_UUID
 
 static uint8_t CUST1_BLOB_UUID_128[ATT_UUID_128_LEN]        = DEF_CUST1_BLOB_UUID_128;
 
+static uint8_t CUST1_RESTORE_UUID_128[ATT_UUID_128_LEN]     = DEF_CUST1_RESTORE_UUID_128;
+
 static const struct att_char128_desc custs1_key_char        = {ATT_CHAR_PROP_RD,
                                                               {0, 0},
                                                               DEF_CUST1_KEY_UUID_128};
@@ -17,6 +19,9 @@ static const struct att_char128_desc custs1_blob_char       = {ATT_CHAR_PROP_RD,
                                                               {0, 0},
                                                               DEF_CUST1_BLOB_UUID_128};
 
+static const struct att_char128_desc custs1_restore_char    = {ATT_CHAR_PROP_WR_NO_RESP,
+                                                              {0, 0},
+                                                              DEF_CUST1_RESTORE_UUID_128};
 
 static uint16_t att_decl_svc       = ATT_DECL_PRIMARY_SERVICE;
 static uint16_t att_decl_char      = ATT_DECL_CHARACTERISTIC;
@@ -51,7 +56,19 @@ struct attm_desc_128 custs1_att_db[CUST1_IDX_NB] =
 
     // Blob Extract Characteristic User Description
     [CUST1_IDX_BLOB_USER_DESC]     = {(uint8_t*)&att_decl_user_desc, ATT_UUID_16_LEN, PERM(RD, ENABLE),
-                                      sizeof(CUST1_BLOB_USER_DESC) - 1, sizeof(CUST1_BLOB_USER_DESC) - 1, (uint8_t*)CUST1_BLOB_USER_DESC}
+                                      sizeof(CUST1_BLOB_USER_DESC) - 1, sizeof(CUST1_BLOB_USER_DESC) - 1, (uint8_t*)CUST1_BLOB_USER_DESC},
+
+    // Restore firmware Characteristic Declaration
+    [CUST1_IDX_RESTORE_CHAR]       = {(uint8_t*)&att_decl_char, ATT_UUID_16_LEN, PERM(RD, ENABLE),
+                                      sizeof(custs1_restore_char), sizeof(custs1_restore_char), (uint8_t*)&custs1_restore_char},
+
+    // Restore firmware Characteristic Value
+    [CUST1_IDX_RESTORE_VAL]        = {CUST1_RESTORE_UUID_128, ATT_UUID_128_LEN, PERM(WR, ENABLE),
+                                      DEF_CUST1_RESTORE_CHAR_LEN, 0, NULL},
+
+    // Restore firmware Characteristic User Description
+    [CUST1_IDX_RESTORE_USER_DESC]  = {(uint8_t*)&att_decl_user_desc, ATT_UUID_16_LEN, PERM(RD, ENABLE),
+                                      sizeof(CUST1_RESTORE_USER_DESC) - 1, sizeof(CUST1_RESTORE_USER_DESC) - 1, (uint8_t*)CUST1_RESTORE_USER_DESC}
 };
 
 /// @} USER_CONFIG
