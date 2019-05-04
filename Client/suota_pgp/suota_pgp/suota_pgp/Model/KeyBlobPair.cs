@@ -4,6 +4,13 @@ namespace suota_pgp.Model
 {
     public class KeyBlobPair : BindableBase
     {
+        private string _btAddress;
+        public string BtAddress
+        {
+            get => _btAddress;
+            set => SetProperty(ref _btAddress, value);
+        }
+
         private string _key;
         public string Key
         {

@@ -20,7 +20,7 @@ namespace suota_pgp.Droid
 
             global::Xamarin.Forms.Forms.Init(this, savedInstanceState);
 
-            LoadApplication(new App());
+            LoadApplication(new App(this));
         }
 
         public void RegisterTypes(IContainerRegistry containerRegistry)

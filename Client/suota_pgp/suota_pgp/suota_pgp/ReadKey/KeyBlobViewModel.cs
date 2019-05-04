@@ -38,7 +38,7 @@ namespace suota_pgp
 
         public void SaveKeyBlob()
         {
-            _fileService.Save(KeyBlob);
+            _fileService.SaveKeyBlob(KeyBlob.Key, KeyBlob.Blob);
         }
 
 
