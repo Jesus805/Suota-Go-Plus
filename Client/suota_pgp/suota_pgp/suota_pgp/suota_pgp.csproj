@@ -10,15 +10,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ble.net" Version="1.2.1" />
     <PackageReference Include="Prism.Forms" Version="7.1.0.431" />
     <PackageReference Include="Prism.Unity.Forms" Version="7.1.0.431" />
     <PackageReference Include="Xamarin.Forms" Version="3.4.0.1008975" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Connect\" />
-    <Folder Include="Suota\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -28,7 +22,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Update="Connect\ConnectView.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
     <EmbeddedResource Update="ReadKey\KeyBlobView.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Suota\SuotaView.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>

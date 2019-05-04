@@ -1,29 +1,46 @@
 ﻿using Prism.Commands;
 using suota_pgp.Model;
 using suota_pgp.Services;
+using System.Text;
 
 namespace suota_pgp
 {
     public class KeyBlobViewModel : ViewModelBase
     {
-        private IBleService _bleService;
+        private IFileManager _fileService;
+        private IBleManager _bleService;
 
-        public KeyBlobPair KeyBlob { get; set; }
+        private KeyBlobPair _keyBlob;
+        public KeyBlobPair KeyBlob
+        {
+            get => _keyBlob;
+            private set => SetProperty(ref _keyBlob, value);
+        }
 
-        public DelegateCommand GetKeyBlobCommand { get; set; }
+        public DelegateCommand GetKeyBlobCommand { get; private set; }
 
-        public KeyBlobViewModel(IBleService bleService)
+        public DelegateCommand SaveFileCommand { get; private set; }
+
+        public KeyBlobViewModel(IBleManager bleService, IFileManager fileService)
         {
             _bleService = bleService;
-            GetKeyBlobCommand = new DelegateCommand(GetKeyBlob);
+            _fileService = fileService;
+
             KeyBlob = new KeyBlobPair();
+            GetKeyBlobCommand = new DelegateCommand(GetKeyBlob);
+            SaveFileCommand = new DelegateCommand(SaveKeyBlob);
         }
 
         public void GetKeyBlob()
         {
-            _bleService.GetKeyBlob();
-            KeyBlob.Key = _bleService.KeyBlob.Key;
-            KeyBlob.Blob = _bleService.KeyBlob.Blob;
+            KeyBlob = _bleService.GetKeyBlob();
         }
+
+        public void SaveKeyBlob()
+        {
+            _fileService.Save(KeyBlob);
+        }
+
+
     }
 }

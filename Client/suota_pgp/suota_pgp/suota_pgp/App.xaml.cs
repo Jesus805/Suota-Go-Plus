@@ -24,8 +24,6 @@ namespace suota_pgp
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
             containerRegistry.Register<ILoggerFacade, DebugLogger>();
-            containerRegistry.RegisterSingleton<IBleService, BleService>();
-            containerRegistry.RegisterSingleton<IFileService, FileService>();
 
             containerRegistry.RegisterForNavigation<NavigationPage>();
             containerRegistry.RegisterForNavigation<MainPage>();
