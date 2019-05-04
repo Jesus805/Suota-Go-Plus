@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.539
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "suota_pgp.Android", "suota_pgp\suota_pgp.Android\suota_pgp.Android.csproj", "{79507CA3-BEB1-49F2-A87E-FF900ACB0340}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "suota_pgp", "suota_pgp\suota_pgp\suota_pgp.csproj", "{B9373CA3-36BE-49CF-A23D-187B0F734DB1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{79507CA3-BEB1-49F2-A87E-FF900ACB0340}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{79507CA3-BEB1-49F2-A87E-FF900ACB0340}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{79507CA3-BEB1-49F2-A87E-FF900ACB0340}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{79507CA3-BEB1-49F2-A87E-FF900ACB0340}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{79507CA3-BEB1-49F2-A87E-FF900ACB0340}.Release|Any CPU.Build.0 = Release|Any CPU
+		{79507CA3-BEB1-49F2-A87E-FF900ACB0340}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{B9373CA3-36BE-49CF-A23D-187B0F734DB1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B9373CA3-36BE-49CF-A23D-187B0F734DB1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B9373CA3-36BE-49CF-A23D-187B0F734DB1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B9373CA3-36BE-49CF-A23D-187B0F734DB1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F99D4D1E-EB09-4F4E-AB68-53099E52B6F4}
+	EndGlobalSection
+EndGlobal
