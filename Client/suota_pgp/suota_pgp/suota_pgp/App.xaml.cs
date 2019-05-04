@@ -25,6 +25,7 @@ namespace suota_pgp
         {
             containerRegistry.Register<ILoggerFacade, DebugLogger>();
             containerRegistry.RegisterSingleton<IBleService, BleService>();
+            containerRegistry.RegisterSingleton<IFileService, FileService>();
 
             containerRegistry.RegisterForNavigation<NavigationPage>();
             containerRegistry.RegisterForNavigation<MainPage>();
