@@ -16,8 +16,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="ReadKey\KeyBlobView.xaml.cs">
-      <DependentUpon>KeyBlobView.xaml</DependentUpon>
+    <Compile Update="DeviceInfo\DeviceInfoView.xaml.cs">
+      <DependentUpon>DeviceInfoView.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
 
@@ -25,7 +25,7 @@
     <EmbeddedResource Update="Connect\ConnectView.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
-    <EmbeddedResource Update="ReadKey\KeyBlobView.xaml">
+    <EmbeddedResource Update="DeviceInfo\DeviceInfoView.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Update="Suota\SuotaView.xaml">

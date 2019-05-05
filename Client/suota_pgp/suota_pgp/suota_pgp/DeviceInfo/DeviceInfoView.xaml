@@ -2,20 +2,24 @@
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:prism="clr-namespace:Prism.Mvvm;assembly=Prism.Forms"
-             x:Class="suota_pgp.KeyBlobView"
+             x:Class="suota_pgp.DeviceInfoView"
              prism:ViewModelLocator.AutowireViewModel="True"
              Title="Key Extractor">
     <ContentPage.Content>
         <StackLayout>
-            <Button Text="Get Key/Blob"
-                    Command="{Binding GetKeyBlobCommand}"/>
+            <Button Text="Get Device Info"
+                    Command="{Binding GetDeviceInfoCommand}"/>
+            <StackLayout Orientation="Horizontal">
+                <Label Text="Bluetooth Address: "/>
+                <Label Text="{Binding DeviceInfo.BtAddress}"/>
+            </StackLayout>
             <StackLayout Orientation="Horizontal">
                 <Label Text="Key: "/>
-                <Label Text="{Binding KeyBlob.Key}"/>
+                <Label Text="{Binding DeviceInfo.Key}"/>
             </StackLayout>
             <StackLayout Orientation="Horizontal">
                 <Label Text="Blob: "/>
-                <Label Text="{Binding KeyBlob.Blob}"/>
+                <Label Text="{Binding DeviceInfo.Blob}"/>
             </StackLayout>
             <Button Text="Save"
                     Command="{Binding SaveCommand}"/>

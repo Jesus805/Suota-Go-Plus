@@ -61,11 +61,20 @@ namespace suota_pgp.Droid.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to PGP_Extractor.
+        ///   Looks up a localized string similar to DeviceInfo.
         /// </summary>
-        internal static string appFolderString {
+        internal static string appFileNameString {
             get {
-                return ResourceManager.GetString("appFolderString", resourceCulture);
+                return ResourceManager.GetString("appFileNameString", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PgpExtractor.
+        /// </summary>
+        internal static string appFolderNameString {
+            get {
+                return ResourceManager.GetString("appFolderNameString", resourceCulture);
             }
         }
     }

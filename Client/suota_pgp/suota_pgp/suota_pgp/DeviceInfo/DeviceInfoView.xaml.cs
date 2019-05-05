@@ -5,9 +5,9 @@ using Xamarin.Forms.Xaml;
 namespace suota_pgp
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
-	public partial class KeyBlobView : ContentPage
+	public partial class DeviceInfoView : ContentPage
 	{
-		public KeyBlobView()
+		public DeviceInfoView()
 		{
 			InitializeComponent();
 		}

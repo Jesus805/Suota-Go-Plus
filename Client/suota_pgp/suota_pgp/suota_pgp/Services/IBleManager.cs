@@ -4,6 +4,6 @@ namespace suota_pgp.Services
 {
     public interface IBleManager
     {
-        KeyBlobPair GetKeyBlob();
+        DeviceInfo GetDeviceInfo();
     }
 }

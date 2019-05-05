@@ -9,10 +9,11 @@ namespace suota_pgp.Droid.Services
         {
         }
 
-        public KeyBlobPair GetKeyBlob()
+        public DeviceInfo GetDeviceInfo()
         {
-            KeyBlobPair result = new KeyBlobPair
+            DeviceInfo result = new DeviceInfo
             {
+                BtAddress = "Got Bluetooth Address",
                 Blob = "Got Blob",
                 Key = "Got Key"
             };
