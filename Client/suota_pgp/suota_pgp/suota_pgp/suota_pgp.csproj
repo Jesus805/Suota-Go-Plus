@@ -19,6 +19,11 @@
     <Compile Update="DeviceInfo\DeviceInfoView.xaml.cs">
       <DependentUpon>DeviceInfoView.xaml</DependentUpon>
     </Compile>
+    <Compile Update="Resource1.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resource1.resx</DependentUpon>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
@@ -27,6 +32,10 @@
     </EmbeddedResource>
     <EmbeddedResource Update="DeviceInfo\DeviceInfoView.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resource1.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resource1.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Update="Suota\SuotaView.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>

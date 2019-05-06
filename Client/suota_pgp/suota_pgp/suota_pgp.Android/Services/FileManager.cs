@@ -6,6 +6,7 @@ using suota_pgp.Services;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace suota_pgp.Droid.Services
 {
@@ -74,7 +75,7 @@ namespace suota_pgp.Droid.Services
         /// Get all firmware files (.img).
         /// </summary>
         /// <returns>A list of firmware names</returns>
-        public List<string> GetFirmwareFileNames()
+        public async Task<List<string>> GetFirmwareFileNames()
         {
             _logger.Log("Attempting to get firmware File names", Category.Info, Priority.None);
 
@@ -87,7 +88,9 @@ namespace suota_pgp.Droid.Services
                 return null;
             }
 
-            foreach (var file in dir.ListFiles())
+            var files = await dir.ListFilesAsync();
+
+            foreach (var file in files)
             {
                 if (file.Name.EndsWith(".img"))
                 {

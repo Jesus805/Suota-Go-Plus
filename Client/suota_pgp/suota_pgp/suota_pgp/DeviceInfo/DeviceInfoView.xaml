@@ -3,10 +3,36 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:prism="clr-namespace:Prism.Mvvm;assembly=Prism.Forms"
              x:Class="suota_pgp.DeviceInfoView"
+             xmlns:local="clr-namespace:suota_pgp"
              prism:ViewModelLocator.AutowireViewModel="True"
              Title="Key Extractor">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <local:BoolToInverseBoolConverter x:Key="inverse"/>
+        </ResourceDictionary>
+    </ContentPage.Resources>
     <ContentPage.Content>
         <StackLayout>
+            <Button Text="Scan"
+                    Command="{Binding ScanCommand}"
+                    IsVisible="{Binding IsScanning, Converter={StaticResource inverse}}"/>
+            <Button Text="Stop Scanning"
+                    Command="{Binding StopScanCommand}"
+                    IsVisible="{Binding IsScanning}"/>
+            <ListView ItemsSource="{Binding Devices}"
+                      SelectedItem="{Binding SelectedDevice}">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <ViewCell>
+                            <StackLayout Orientation="Horizontal">
+                                <Label Text="{Binding Name}"/>
+                                <Label Text=" - "/>
+                                <Label Text="{Binding BtAddress}"/>
+                            </StackLayout>
+                        </ViewCell>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
             <Button Text="Get Device Info"
                     Command="{Binding GetDeviceInfoCommand}"/>
             <StackLayout Orientation="Horizontal">
