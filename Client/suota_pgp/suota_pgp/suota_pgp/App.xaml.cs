@@ -18,7 +18,7 @@ namespace suota_pgp
         {
             InitializeComponent();
 
-            var result = await NavigationService.NavigateAsync("NavigationPage/DeviceInfoView");
+            var result = await NavigationService.NavigateAsync("NavigationPage/ConnectView");
         }
 
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
@@ -28,6 +28,8 @@ namespace suota_pgp
             containerRegistry.RegisterForNavigation<NavigationPage>();
             containerRegistry.RegisterForNavigation<MainPage>();
             containerRegistry.RegisterForNavigation<DeviceInfoView>();
+            containerRegistry.RegisterForNavigation<ConnectView>();
+            containerRegistry.RegisterForNavigation<SuotaView>();
         }
 
         private void SetMainPageFromException(Exception ex)

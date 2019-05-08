@@ -9,6 +9,6 @@ namespace suota_pgp
 
         public class GoPlusFoundEvent : PubSubEvent<GoPlus> { }
 
-        public class GoPlusSelectedEvent : PubSubEvent<GoPlus> { }
+        public class FileLoadedEvent : PubSubEvent { }
     }
 }

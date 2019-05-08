@@ -8,18 +8,43 @@
              Title="Key Extractor">
     <ContentPage.Resources>
         <ResourceDictionary>
-            <local:BoolToInverseBoolConverter x:Key="inverse"/>
+            <local:ScanStateToBoolConverter x:Key="ss2b"/>
         </ResourceDictionary>
     </ContentPage.Resources>
     <ContentPage.Content>
-        <StackLayout>
-            <Button Text="Scan"
+        <Grid Margin="10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"/>
+                <RowDefinition />
+                <RowDefinition Height="auto"/>
+                <RowDefinition />
+                <RowDefinition Height="auto"/>
+            </Grid.RowDefinitions>
+            <Button Grid.Row="0"
+                    Grid.Column="0"
+                    Grid.ColumnSpan="2"
+                    Text="Scan"
                     Command="{Binding ScanCommand}"
-                    IsVisible="{Binding IsScanning, Converter={StaticResource inverse}}"/>
-            <Button Text="Stop Scanning"
+                    IsVisible="{Binding State,
+                                        Converter={StaticResource ss2b},
+                                        ConverterParameter='inverse'}"
+                    HorizontalOptions="Center"/>
+            <Button Grid.Row="0"
+                    Grid.Column="0"
+                    Grid.ColumnSpan="2"
+                    Text="Stop Scanning"
                     Command="{Binding StopScanCommand}"
-                    IsVisible="{Binding IsScanning}"/>
-            <ListView ItemsSource="{Binding Devices}"
+                    IsVisible="{Binding State, 
+                                        Converter={StaticResource ss2b}}"
+                    HorizontalOptions="Center"/>
+            <ListView Grid.Row="1"
+                      Grid.Column="0"
+                      Grid.ColumnSpan="2"
+                      ItemsSource="{Binding Devices}"
                       SelectedItem="{Binding SelectedDevice}">
                 <ListView.ItemTemplate>
                     <DataTemplate>
@@ -33,24 +58,51 @@
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
-            <Button Text="Get Device Info"
+            <Button Grid.Row="2"
+                    Grid.Column="0"
+                    Text="Get Device Info"
                     Command="{Binding GetDeviceInfoCommand}"/>
-            <StackLayout Orientation="Horizontal">
-                <Label Text="Bluetooth Address: "/>
-                <Label Text="{Binding DeviceInfo.BtAddress}"/>
-            </StackLayout>
-            <StackLayout Orientation="Horizontal">
-                <Label Text="Key: "/>
-                <Label Text="{Binding DeviceInfo.Key}"/>
-            </StackLayout>
-            <StackLayout Orientation="Horizontal">
-                <Label Text="Blob: "/>
-                <Label Text="{Binding DeviceInfo.Blob}"/>
-            </StackLayout>
-            <Button Text="Save"
-                    Command="{Binding SaveCommand}"/>
-            <Button Text="Restore PGP Firmware"
-                    Command="{Binding RestoreFirmwareCommand}"/>
-        </StackLayout>
+            <Button Grid.Row="2"
+                    Grid.Column="1"
+                    Text="Restore PGP"
+                    Command="{Binding RestoreCommand}"/>
+            <Grid Grid.Row="3"
+                  Grid.Column="0"
+                  Grid.ColumnSpan="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Label Grid.Row="0" 
+                       Grid.Column="0"
+                       Text="Bluetooth Address: "/>
+                <Label Grid.Row="0"
+                       Grid.Column="1"
+                       Text="{Binding DeviceInfo.BtAddress}"/>
+                <Label Grid.Row="1"
+                       Grid.Column="0"
+                       Text="Key: "/>
+                <Label Grid.Row="1"
+                       Grid.Column="1"
+                       Text="{Binding DeviceInfo.Key}"/>
+                <Label Grid.Row="2"
+                       Grid.Column="0"
+                       Text="Blob: "/>
+                <Label Grid.Row="2"
+                       Grid.Column="1"
+                       Text="{Binding DeviceInfo.Blob}"/>
+            </Grid>
+            <Button Grid.Row="4"
+                    Grid.Column="0"
+                    Grid.ColumnSpan="2"
+                    Text="Save"
+                    Command="{Binding SaveCommand}"
+                    HorizontalOptions="Center"/>
+        </Grid>
     </ContentPage.Content>
 </ContentPage>

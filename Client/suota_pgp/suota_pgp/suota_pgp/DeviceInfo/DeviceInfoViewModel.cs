@@ -1,5 +1,6 @@
 ﻿using Prism.Commands;
 using Prism.Events;
+using Prism.Navigation;
 using suota_pgp.Model;
 using suota_pgp.Services;
 using System.Collections.ObjectModel;
@@ -8,9 +9,11 @@ namespace suota_pgp
 {
     public class DeviceInfoViewModel : ViewModelBase
     {
-        private IEventAggregator _aggregator;
-        private IFileManager _fileService;
+        protected IEventAggregator _aggregator;
         private IBleManager _bleManager;
+        private IFileManager _fileService;
+        private SubscriptionToken _scanStateToken;
+        private SubscriptionToken _goPlusFoundToken;
 
         public ObservableCollection<GoPlus> Devices { get; private set; }
 
@@ -20,9 +23,10 @@ namespace suota_pgp
             get => _selectedDevice;
             set
             {
-                if (value != null && SetProperty(ref _selectedDevice, value))
+                if (SetProperty(ref _selectedDevice, value))
                 {
-                    _aggregator.GetEvent<PrismEvents.GoPlusSelectedEvent>().Publish(value);
+                    GetDeviceInfoCommand.RaiseCanExecuteChanged();
+                    RestoreCommand.RaiseCanExecuteChanged();
                 }
             }
         }
@@ -31,14 +35,30 @@ namespace suota_pgp
         public DeviceInfo DeviceInfo
         {
             get => _deviceInfo;
-            private set => SetProperty(ref _deviceInfo, value);
+            private set
+            {
+                if (SetProperty(ref _deviceInfo, value))
+                {
+                    SaveCommand.RaiseCanExecuteChanged();
+                }
+            }
         }
 
-        private bool _isScanning;
-        public bool IsScanning
+        private State _state;
+        public State State
         {
-            get => _isScanning;
-            set => SetProperty(ref _isScanning, value);
+            get => _state;
+            private set
+            {
+                if (SetProperty(ref _state, value))
+                {
+                    GetDeviceInfoCommand.RaiseCanExecuteChanged();
+                    RestoreCommand.RaiseCanExecuteChanged();
+                    SaveCommand.RaiseCanExecuteChanged();
+                    ScanCommand.RaiseCanExecuteChanged();
+                    StopScanCommand.RaiseCanExecuteChanged();
+                }
+            }
         }
 
         public DelegateCommand GetDeviceInfoCommand { get; private set; }
@@ -49,6 +69,8 @@ namespace suota_pgp
 
         public DelegateCommand StopScanCommand { get; private set; }
 
+        public DelegateCommand RestoreCommand { get; private set; }
+
         public DeviceInfoViewModel(IEventAggregator aggregator,
                                    IBleManager bleService, 
                                    IFileManager fileService)
@@ -57,48 +79,124 @@ namespace suota_pgp
             _bleManager = bleService;
             _fileService = fileService;
 
-            _aggregator.GetEvent<PrismEvents.ScanStateChangeEvent>().Subscribe(OnScanStateChanged, ThreadOption.UIThread);
-            _aggregator.GetEvent<PrismEvents.GoPlusFoundEvent>().Subscribe(OnGoPlusFound);
-
             Devices = new ObservableCollection<GoPlus>();
-            DeviceInfo = new DeviceInfo();
-            GetDeviceInfoCommand = new DelegateCommand(GetDeviceInfo);
-            SaveCommand = new DelegateCommand(Save);
-            ScanCommand = new DelegateCommand(Scan);
-            StopScanCommand = new DelegateCommand(StopScan);
 
-            IsScanning = false;
+            GetDeviceInfoCommand = new DelegateCommand(GetDeviceInfo, GetDeviceInfoCanExecute);
+            RestoreCommand = new DelegateCommand(Restore, RestoreCanExecute);
+            SaveCommand = new DelegateCommand(Save, SaveCanExecute);
+            ScanCommand = new DelegateCommand(Scan, ScanCanExecute);
+            StopScanCommand = new DelegateCommand(StopScan, StopScanCanExecute);
+
+            State = State.Idle;
         }
 
-        public async void GetDeviceInfo()
+        private async void GetDeviceInfo()
         {
-            DeviceInfo = await _bleManager.GetDeviceInfo();
+            if (SelectedDevice == null)
+            {
+                return;
+            }
+
+            StopScan();
+            DeviceInfo = await _bleManager.GetDeviceInfo(SelectedDevice);
         }
 
-        public void Save()
+        private bool GetDeviceInfoCanExecute()
+        {
+            return (State == State.Idle) && (SelectedDevice != null);
+        }
+
+        private void Save()
         {
             _fileService.SaveDeviceInfo(DeviceInfo);
         }
 
-        public void Scan()
+        private bool SaveCanExecute()
         {
+            return (State == State.Idle) && (DeviceInfo != null);
+        }
+
+        private void Scan()
+        {
+            SelectedDevice = null;
+            DeviceInfo = null;
             Devices.Clear();
             _bleManager.Scan();
         }
 
-        public void StopScan()
+        private bool ScanCanExecute()
         {
-            _bleManager.StopScan();
+            return State == State.Idle;
         }
 
-        public void OnScanStateChanged(ScanState state)
+        private void StopScan()
         {
-            IsScanning = (state == ScanState.Running);
+            if (State == State.Scanning)
+            {
+                _bleManager.StopScan();
+            }
         }
 
-        public void OnGoPlusFound(GoPlus pgp)
+        private bool StopScanCanExecute()
         {
-            Devices.Add(pgp);
+            return State == State.Scanning;
         }
+
+        private void Restore()
+        {
+
+        }
+
+        private bool RestoreCanExecute()
+        {
+            return (State == State.Idle) && (SelectedDevice != null);
+        }
+
+        #region Events
+
+        private void OnScanStateChanged(ScanState state)
+        {
+            State = (state == ScanState.Running) ? State.Scanning : State.Idle;
+        }
+
+        private void OnGoPlusFound(GoPlus pgp)
+        {
+            if (pgp != null)
+            {
+                Devices.Add(pgp);
+            }
+        }
+
+        #endregion
+
+        #region Navigation
+
+        public override void OnNavigatedFrom(INavigationParameters parameters)
+        {
+            if (_scanStateToken != null)
+            {
+                _aggregator.GetEvent<PrismEvents.ScanStateChangeEvent>().Unsubscribe(_scanStateToken);
+                _scanStateToken = null;
+            }
+
+            if (_goPlusFoundToken != null)
+            {
+                _aggregator.GetEvent<PrismEvents.GoPlusFoundEvent>().Subscribe(OnGoPlusFound, ThreadOption.UIThread);
+                _goPlusFoundToken = null;
+            }
+        }
+
+        public override void OnNavigatedTo(INavigationParameters parameters)
+        {
+            _scanStateToken = _aggregator.GetEvent<PrismEvents.ScanStateChangeEvent>().Subscribe(OnScanStateChanged, ThreadOption.UIThread);
+            _goPlusFoundToken = _aggregator.GetEvent<PrismEvents.GoPlusFoundEvent>().Subscribe(OnGoPlusFound, ThreadOption.UIThread);
+        }
+
+        public override void OnNavigatingTo(INavigationParameters parameters)
+        {
+
+        }
+
+        #endregion
     }
 }

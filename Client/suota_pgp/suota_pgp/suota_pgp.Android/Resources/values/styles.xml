@@ -27,4 +27,7 @@
   <style name="AppCompatDialogStyle" parent="Theme.AppCompat.Light.Dialog">
     <item name="colorAccent">#FF4081</item>
   </style>
+  <style name="ListView" parent="@android:style/Widget.ListView">
+    <item name="android:background">#666666</item>
+  </style>
 </resources>

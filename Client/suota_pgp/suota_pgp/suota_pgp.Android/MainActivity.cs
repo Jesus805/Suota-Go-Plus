@@ -25,8 +25,9 @@ namespace suota_pgp.Droid
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            containerRegistry.Register<IFileManager, FileManager>();
-            containerRegistry.Register<IBleManager, BleManager>();
+            containerRegistry.RegisterSingleton<IBleManager, BleManager>();
+            containerRegistry.RegisterSingleton<IFileManager, FileManager>();
+            containerRegistry.RegisterSingleton<ISuotaManager, SuotaManager>();
         }
     }
 }

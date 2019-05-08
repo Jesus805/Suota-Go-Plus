@@ -1,4 +1,5 @@
 ﻿using Java.IO;
+using Prism.Events;
 using Prism.Logging;
 using suota_pgp.Droid.Properties;
 using suota_pgp.Model;
@@ -12,23 +13,48 @@ namespace suota_pgp.Droid.Services
 {
     public class FileManager : IFileManager
     {
+        private IEventAggregator _aggregator;
         private readonly ILoggerFacade _logger;
         private readonly string _path;
 
         /// <summary>
         /// Contents of the firmware file.
         /// </summary>
-        private char[] _firmware;
+        private byte[] _firmware;
 
         /// <summary>
         /// Initialize a new instance of 'FileManager'.
         /// </summary>
         /// <param name="logger">Prism Dependency Injected ILoggerFacade.</param>
-        public FileManager(ILoggerFacade logger)
+        public FileManager(IEventAggregator aggregator,
+                           ILoggerFacade logger)
         {
+            _aggregator = aggregator;
             _logger = logger;
             _path = Android.OS.Environment.ExternalStorageDirectory.AbsolutePath + "/" +
                     Resources.appFolderNameString;
+
+            File dir = new File(_path);
+            if (!IsExternalStorageAccessible(dir))
+            {
+                _logger.Log("ExternalStorage was not mounted or is readonly", Category.Exception, Priority.High);
+                return;
+            }
+
+            if (!dir.Exists())
+            {
+                try
+                {
+                    dir.Mkdir();
+                    _logger.Log("Created \"" + Resources.appFolderNameString +
+                                "\" directory", Category.Info, Priority.None);
+                }
+                catch
+                {
+                    _logger.Log("Unable to create \"" + Resources.appFolderNameString +
+                                "\" directory", Category.Exception, Priority.High);
+                }
+            }
         }
 
         /// <summary>
@@ -37,6 +63,8 @@ namespace suota_pgp.Droid.Services
         /// <param name="fileName">Firmware filename</param>
         public async void LoadFirmware(string fileName)
         {
+            _firmware = null;
+
             if (string.IsNullOrWhiteSpace(fileName) || !fileName.EndsWith(".img"))
             {
                 _logger.Log("Unable to load firmware file, invalid filename or extension.", Category.Exception, Priority.High);
@@ -54,15 +82,22 @@ namespace suota_pgp.Droid.Services
                 _logger.Log("Unable to load firmware file, file does not exist.", Category.Exception, Priority.High);
             }
 
-            _firmware = new char[file.Length()];
+            _firmware = new byte[file.Length()];
+            var temp = new char[file.Length()];
 
             BufferedReader reader = new BufferedReader(new FileReader(file));
 
             _logger.Log("Reading file...", Category.Info, Priority.None);
             try
             {
-                await reader.ReadAsync(_firmware);
+                await reader.ReadAsync(temp);
+                for (int i = 0; i < file.Length(); i++)
+                {
+                    _firmware[i] = (byte)temp[i];
+                }
+
                 _logger.Log("Read file complete", Category.Info, Priority.None);
+                _aggregator.GetEvent<PrismEvents.FileLoadedEvent>().Publish();
             }
             catch
             {
