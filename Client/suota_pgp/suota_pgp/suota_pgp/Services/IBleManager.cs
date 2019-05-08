@@ -15,11 +15,11 @@ namespace suota_pgp.Services
 
         void StopScan();
 
-        void ConnectDevice(GoPlus device);
+        Task ConnectDevice(GoPlus device);
 
-        void DisconnectDevice(GoPlus device);
+        Task DisconnectDevice(GoPlus device);
 
-        void WriteCharacteristic(GoPlus device, Guid characteristic, byte[] value);
+        Task WriteCharacteristic(GoPlus device, Guid characteristic, byte[] value);
 
         Task<byte[]> ReadCharacteristic(GoPlus device, Guid characteristic);
     }

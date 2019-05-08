@@ -20,26 +20,24 @@ namespace suota_pgp.Droid.Services
             _fileManager = fileManager;
         }
 
-        public void BeginSuota(GoPlus device, string fileName)
+        public async void BeginSuota(GoPlus device, string fileName)
         {
             if (device == null)
             {
                 throw new ArgumentNullException("device");
             }   
             
-            if(string.IsNullOrWhiteSpace(fileName))
+            if (string.IsNullOrWhiteSpace(fileName))
             {
                 throw new ArgumentNullException("fileName");
             }
 
-            _bleManager.ConnectDevice(device);
-
-            // Enable Suota on Go+ device. 
-            _bleManager.WriteCharacteristic(device, Constants.GoPlusUpdateRequestUuid, new byte[] { 0x01 });
+            await _bleManager.ConnectDevice(device);
 
             //_fileManager.LoadFirmware(fileName);
 
-            //_bleManager.EnableSuota(device);
+            // Enable Suota on Go+ device. 
+            await _bleManager.WriteCharacteristic(device, Constants.GoPlusUpdateRequestUuid, new byte[] { 0x01 });
         }
     }
 }

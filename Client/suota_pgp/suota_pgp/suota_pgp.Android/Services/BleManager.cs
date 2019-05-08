@@ -164,7 +164,7 @@ namespace suota_pgp.Droid.Services
         /// Connect to a Go+ device.
         /// </summary>
         /// <param name="device">Go+ to connect.</param>
-        public async void ConnectDevice(GoPlus device)
+        public async Task ConnectDevice(GoPlus device)
         {
             if (device == null)
             {
@@ -189,7 +189,7 @@ namespace suota_pgp.Droid.Services
         /// Disconnect from a Go+ device.
         /// </summary>
         /// <param name="device">Go+ to disconnect from.</param>
-        public async void DisconnectDevice(GoPlus device)
+        public async Task DisconnectDevice(GoPlus device)
         {
             if (device == null)
             {
@@ -214,7 +214,7 @@ namespace suota_pgp.Droid.Services
         /// <param name="device"></param>
         /// <param name="characteristic"></param>
         /// <param name="value"></param>
-        public async void WriteCharacteristic(GoPlus device, Guid characteristic, byte[] value)
+        public async Task WriteCharacteristic(GoPlus device, Guid characteristic, byte[] value)
         {
             if (device == null)
                 throw new ArgumentNullException("device");
@@ -349,10 +349,12 @@ namespace suota_pgp.Droid.Services
 
         private void _adapter_DeviceDisconnected(object sender, Plugin.BLE.Abstractions.EventArgs.DeviceEventArgs e)
         {
+            return;
         }
 
         private void _adapter_DeviceConnectionLost(object sender, Plugin.BLE.Abstractions.EventArgs.DeviceErrorEventArgs e)
         {
+            return;
         }
 
         #endregion
