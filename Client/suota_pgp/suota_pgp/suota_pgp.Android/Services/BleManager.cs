@@ -214,6 +214,29 @@ namespace suota_pgp.Droid.Services
         /// <param name="device"></param>
         /// <param name="characteristic"></param>
         /// <param name="value"></param>
+        public async Task WriteCharacteristic(GoPlus device, Guid characteristic, int value)
+        {
+            if (device == null)
+                throw new ArgumentNullException("device");
+
+            if (characteristic == null)
+                throw new ArgumentNullException("characteristic");
+
+            byte[] b = new byte[4];
+            b[0] = (byte)value;
+            b[1] = (byte)(((uint)value >>  8) & 0xFF);
+            b[2] = (byte)(((uint)value >> 16) & 0xFF);
+            b[3] = (byte)(((uint)value >> 24) & 0xFF);
+
+            await WriteCharacteristic(device, characteristic, b);
+        }
+
+        /// <summary>
+        /// Write to a BLE Characteristic.
+        /// </summary>
+        /// <param name="device"></param>
+        /// <param name="characteristic"></param>
+        /// <param name="value"></param>
         public async Task WriteCharacteristic(GoPlus device, Guid characteristic, byte[] value)
         {
             if (device == null)
@@ -295,6 +318,67 @@ namespace suota_pgp.Droid.Services
             {
                 throw new Exception("Characteristic is not writable");
             }
+        }
+
+        public async Task NotifyRegister(GoPlus device, Guid characteristic)
+        {
+            if (device == null)
+                throw new ArgumentNullException("device");
+
+            if (characteristic == null)
+                throw new ArgumentNullException("characteristic");
+
+            if (!_devicesFound.ContainsKey(device))
+                throw new Exception("This device does not exist in discovered devices");
+
+
+            IDevice pgp = _devicesFound[device];
+
+            if (!_adapter.ConnectedDevices.Contains(pgp))
+                throw new Exception("This device is not connected");
+
+            Guid serviceUuid = Constants.Char2ServiceMap[characteristic];
+
+            IService service = await pgp.GetServiceAsync(serviceUuid);
+
+            ICharacteristic keyChar = await service.GetCharacteristicAsync(characteristic);
+
+            keyChar.ValueUpdated += KeyChar_ValueUpdated;
+
+            await keyChar.StartUpdatesAsync();
+        }
+
+        public async Task NotifyUnregister(GoPlus device, Guid characteristic)
+        {
+            if (device == null)
+                throw new ArgumentNullException("device");
+
+            if (characteristic == null)
+                throw new ArgumentNullException("characteristic");
+
+            if (!_devicesFound.ContainsKey(device))
+                throw new Exception("This device does not exist in discovered devices");
+
+
+            IDevice pgp = _devicesFound[device];
+
+            if (!_adapter.ConnectedDevices.Contains(pgp))
+                throw new Exception("This device is not connected");
+
+            Guid serviceUuid = Constants.Char2ServiceMap[characteristic];
+
+            IService service = await pgp.GetServiceAsync(serviceUuid);
+
+            ICharacteristic keyChar = await service.GetCharacteristicAsync(characteristic);
+
+            keyChar.ValueUpdated -= KeyChar_ValueUpdated;
+
+            await keyChar.StopUpdatesAsync();
+        }
+
+        private void KeyChar_ValueUpdated(object sender, Plugin.BLE.Abstractions.EventArgs.CharacteristicUpdatedEventArgs e)
+        {
+
         }
 
         #region Events
