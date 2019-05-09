@@ -24,5 +24,9 @@ namespace suota_pgp.Services
         Task WriteCharacteristic(GoPlus device, Guid characteristic, byte[] value);
 
         Task<byte[]> ReadCharacteristic(GoPlus device, Guid characteristic);
+
+        Task NotifyRegister(GoPlus device, Guid characteristic);
+
+        Task NotifyUnregister(GoPlus device, Guid characteristic);
     }
 }
