@@ -17,7 +17,27 @@ namespace suota_pgp
 
         public static Guid ByteArrayToGuid(byte[] bytes)
         {
-            throw new NotImplementedException();
+            if (bytes == null)
+            {
+                throw new ArgumentNullException("bytes");
+            }
+
+            if (bytes.Length != 16)
+            {
+                throw new ArgumentException("The byte array must be 16 bytes", "bytes");
+            }
+
+            // Convert first three groups to little endian, copy the rest.
+            byte[] guid = new byte[16]
+            {
+                bytes[3], bytes[2], bytes[1], bytes[0],
+                bytes[5], bytes[4],
+                bytes[7], bytes[6],
+                bytes[8], bytes[9],
+                bytes[10], bytes[11], bytes[12], bytes[13], bytes[14], bytes[15]
+            };
+
+            return new Guid(guid);
         }
     }
 }

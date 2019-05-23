@@ -4,7 +4,8 @@
              xmlns:prism="clr-namespace:Prism.Mvvm;assembly=Prism.Forms"
              xmlns:local="clr-namespace:suota_pgp"
              x:Class="suota_pgp.ConnectView"
-             prism:ViewModelLocator.AutowireViewModel="True">
+             prism:ViewModelLocator.AutowireViewModel="True"
+             Title="Patch Device">
     <ContentPage.Resources>
         <ResourceDictionary>
             <local:ScanStateToBoolConverter x:Key="ss2b"/>
@@ -34,13 +35,14 @@
             <Label Grid.Row="0"
                    Grid.Column="0"
                    Grid.ColumnSpan="2"
-                   Text="Paired Go+ Devices"
+                   Text="Paired Pokemon GO Plus"
                    HorizontalOptions="Center"
-                   Margin="10"/>
+                   Margin="10"
+                   FontSize="Medium"/>
             <Button Grid.Row="1"
                     Grid.Column="0"
                     Grid.ColumnSpan="2"
-                    Text="Refresh Bonded Devices"
+                    Text="Refresh"
                     Command="{Binding GetPairedPgpCommand}"
                     HorizontalOptions="Center"/>
             <ListView Grid.Row="2"
@@ -67,11 +69,12 @@
                    Grid.ColumnSpan="2"
                    Text="Firmware File"
                    HorizontalOptions="Center"
-                   Margin="10"/>
+                   Margin="10"
+                   FontSize="Medium"/>
             <Button Grid.Row="4"
                     Grid.Column="0"
                     Grid.ColumnSpan="2"
-                    Text="Refresh Files"
+                    Text="Refresh"
                     Command="{Binding RefreshFilesCommand}"
                     HorizontalOptions="Center"/>
             <ListView Grid.Row="5"
@@ -80,16 +83,14 @@
                       ItemsSource="{Binding Files}"
                       SelectedItem="{Binding SelectedFileName}"
                       SelectionMode="Single">
-                <!--
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <ViewCell>
-                            <Label Margin="10"
-                                   TextColor="Black"/>
+                            <Label Margin="10" 
+                                   Text="{Binding}"/>
                         </ViewCell>
                     </DataTemplate>
                 </ListView.ItemTemplate>
-                -->
             </ListView>
             <Button Grid.Row="6"
                     Grid.Column="0"

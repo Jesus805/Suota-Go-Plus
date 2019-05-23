@@ -5,67 +5,55 @@ namespace suota_pgp.Model
 {
     public static class Constants
     {
-        public static readonly byte[] EnableSuota = { 0x01 };
+        public const byte EnableSuota = 1;
 
         public const int MemoryBank = 1;
+
+        public const int PatchMemAddress = 0x8002;
+
+        public const int PatchLength = 6;
+
+        public const int RetryCount = 3;
+
+        public const int HeaderSize = 0x20;
+
+        /// <summary>
+        /// Suota Commands
+        /// </summary>
+        public const int SpotaImgEnd = 0xFE;
+        public const int SpotaMemServiceExit = 0xFF;
 
         /// <summary>
         /// SPI Settings
         /// </summary>
-        public const int SpiMemoryType      = 3;
-        public const int SpiMiso            = 5;
-        public const int SpiMosi            = 6;
-        public const int SpiCs              = 3;
-        public const int SpiSck             = 0;
-        public const int BlockSize          = 240;
-        public const int SpiMemTypeExternal = 0x13;
+        public const int SpiMemoryType = 0x13;
+        public const int SpiMiso       = 5;
+        public const int SpiMosi       = 6;
+        public const int SpiCs         = 3;
+        public const int SpiSck        = 0;
+        public const int BlockSize     = 240;
+        public const int ChunkSize     = 20;
 
-        /// <summary>
-        /// SPOTA started for downloading image (SUOTA application).
-        /// </summary>
-        public const int SpotarImgStarted           = 0x10;
-        /// <summary>
-        /// Invalid image bank.
-        /// </summary>
-        public const int SpotarInvalidImgBank       = 0x11;
-        /// <summary>
-        /// Invalid image header.
-        /// </summary>
-        public const int SpotarInvalidImgHeader     = 0x12;
-        /// <summary>
-        /// Invalid image size.
-        /// </summary>
-        public const int SpotarInvalidImgSize       = 0x13;
-        /// <summary>
-        /// Invalid product header.
-        /// </summary>
-        public const int SpotarInvalidProductHeader = 0x14;
-        /// <summary>
-        /// Same Image Error.
-        /// </summary>
-        public const int SpotarSameImgError         = 0x15;
-        /// <summary>
-        /// Failed to read from external memory device.
-        /// </summary>
-        public const int SpotarExtMemReadError      = 0x16;
+        public const string GoPlusName = "Pokemon GO Plus";
 
         /// <summary>
         /// Extractor Service Characteristics
         /// </summary>
-        public static readonly Guid ExtractorServiceUuid      = Guid.Parse("edfec62e-9910-0bac-5241-d8bda6932a2f");
+        public static readonly Guid ExtractorServiceUuid      = Guid.Parse("845d8f76-1f3b-5895-aa48-07af9bb16bdc");
         /// <summary>
         /// Read Key - READ
         /// </summary>
-        public static readonly Guid KeyCharacteristicUuid     = Guid.Parse("ce62c734-3592-a882-d849-f129a2ec6ce1");
+        public static readonly Guid KeyCharacteristicUuid     = Guid.Parse("870d5ab1-20bd-b88a-5746-a97f5c33ea58");
         /// <summary>
         /// Read Blob - READ
         /// </summary>
-        public static readonly Guid BlobCharacteristicUuid    = Guid.Parse("b58b010d-6de0-7f92-3c47-4f36c70f3632");
+        public static readonly Guid BlobCharacteristicUuid    = Guid.Parse("fe0002af-f8e3-f1b2-b141-b40adf381d18");
         /// <summary>
         /// Restore Go+ to it's original firmware - WRITE
         /// </summary>
         public static readonly Guid RestoreCharacteristicUuid = Guid.Parse("d216f679-4c8c-42f6-8206-a7150a0ec0fd");
 
+        public static readonly byte[] SuotaAdvertisementUuid = { 0xFE, 0xF5 };
         /// <summary>
         /// Go+ Service
         /// </summary>

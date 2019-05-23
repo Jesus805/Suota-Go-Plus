@@ -11,6 +11,12 @@ namespace suota_pgp
 
         public class FileLoadedEvent : PubSubEvent { }
 
-        public class CharacteristicUpdatedEvent : PubSubEvent<CharValue> { }
+        public class CharacteristicUpdatedEvent : PubSubEvent<CharacteristicUpdate> { }
+
+        public class ProgressUpdateEvent : PubSubEvent<Progress> { }
+
+        public class ShowShortToastEvent : PubSubEvent<string> { }
+
+        public class ShowLongToastEvent : PubSubEvent<string> { }
     }
 }

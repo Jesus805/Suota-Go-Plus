@@ -7,9 +7,11 @@ namespace suota_pgp.Services
 {
     public interface IBleManager
     {
-        Task<DeviceInfo> GetDeviceInfo(GoPlus device);
+        Task GetDeviceInfo(GoPlus device);
 
-        List<GoPlus> GetPairedDevices();
+        List<GoPlus> GetBondedDevices();
+
+        void RemoveBond(GoPlus device);
 
         void Scan();
 
@@ -19,9 +21,13 @@ namespace suota_pgp.Services
 
         Task DisconnectDevice(GoPlus device);
 
-        Task WriteCharacteristic(GoPlus device, Guid characteristic, int value);
+        Task WriteCharacteristic(GoPlus device, Guid characteristic, byte value, bool noResponse = false);
 
-        Task WriteCharacteristic(GoPlus device, Guid characteristic, byte[] value);
+        Task WriteCharacteristic(GoPlus device, Guid characteristic, short value, bool noResponse = false);
+
+        Task WriteCharacteristic(GoPlus device, Guid characteristic, int value, bool noResponse = false);
+
+        Task WriteCharacteristic(GoPlus device, Guid characteristic, byte[] value, bool noResponse = false);
 
         Task<byte[]> ReadCharacteristic(GoPlus device, Guid characteristic);
 

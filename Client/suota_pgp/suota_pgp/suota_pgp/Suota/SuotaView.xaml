@@ -3,12 +3,27 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="suota_pgp.SuotaView"
              xmlns:prism="clr-namespace:Prism.Mvvm;assembly=Prism.Forms"
-             prism:ViewModelLocator.AutowireViewModel="True">
+             prism:ViewModelLocator.AutowireViewModel="True"
+             Title="SUOTA in progress">
     <ContentPage.Content>
-        <StackLayout>
-            <Label Text="Welcome to Xamarin.Forms!"
-                VerticalOptions="CenterAndExpand" 
-                HorizontalOptions="CenterAndExpand" />
-        </StackLayout>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="auto" />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Label Grid.Row="0"
+                   Text="Keep your Pokemon GO Plus near your phone until the update process is complete."
+                   HorizontalOptions="Center"
+                   Margin="10"/>
+            <ProgressBar Grid.Row="1"
+                         Progress="{Binding Progress}"
+                         ProgressColor="#1ac6ff"
+                         Margin="10"/>
+            <Editor Grid.Row="2"
+                    Text="{Binding ProgressText}"
+                    IsSpellCheckEnabled="False"
+                    IsEnabled="False"/>
+        </Grid>
     </ContentPage.Content>
 </ContentPage>

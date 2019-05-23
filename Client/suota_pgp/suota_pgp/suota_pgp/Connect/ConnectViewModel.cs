@@ -9,7 +9,7 @@ namespace suota_pgp
 {
     /// <summary>
     /// Configure and Connect ViewModel.
-    /// Upload the firmware here, select the PGP device to connect to, 
+    /// Upload the firmware here, select the PGP device to connect to,
     /// then pass navigation to SUOTA.
     /// </summary>
     public class ConnectViewModel : ViewModelBase
@@ -18,9 +18,10 @@ namespace suota_pgp
         private IBleManager _bleManager;
         private IFileManager _fileManager;
         private ISuotaManager _suotaManager;
+        private INavigationService _navigationService;
 
         /// <summary>
-        /// List of Go+ Devices
+        /// List of Go+ Devices.
         /// </summary>
         public ObservableCollection<GoPlus> Devices { get; private set; }
 
@@ -29,6 +30,9 @@ namespace suota_pgp
         /// </summary>
         public ObservableCollection<string> Files { get; private set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         private GoPlus _selectedDevice;
         public GoPlus SelectedDevice
         {
@@ -42,6 +46,9 @@ namespace suota_pgp
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         private string _selectedFileName;
         public string SelectedFileName
         {
@@ -55,6 +62,9 @@ namespace suota_pgp
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         private State _state;
         public State State
         {
@@ -70,6 +80,9 @@ namespace suota_pgp
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         private bool _firmwareIsLoaded;
         public bool FirmwareIsLoaded
         {
@@ -89,17 +102,28 @@ namespace suota_pgp
 
         public DelegateCommand RefreshFilesCommand { get; private set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="aggregator"></param>
+        /// <param name="bleManager"></param>
+        /// <param name="fileManager"></param>
+        /// <param name="navService"></param>
+        /// <param name="suotaManager"></param>
         public ConnectViewModel(IEventAggregator aggregator,
                                 IBleManager bleManager,
                                 IFileManager fileManager,
+                                INavigationService navService,
                                 ISuotaManager suotaManager)
         {
             _aggregator = aggregator;
             _bleManager = bleManager;
             _fileManager = fileManager;
             _suotaManager = suotaManager;
+            _navigationService = navService;
 
             Devices = new ObservableCollection<GoPlus>();
+            
             Files = new ObservableCollection<string>();
 
             BeginSuotaCommand = new DelegateCommand(BeginSuota, CanBeginSuota);
@@ -114,7 +138,7 @@ namespace suota_pgp
         {
             SelectedDevice = null;
             Devices.Clear();
-            var pgpList = _bleManager.GetPairedDevices();
+            var pgpList = _bleManager.GetBondedDevices();
             foreach (var pgp in pgpList)
             {
                 Devices.Add(pgp);
@@ -137,12 +161,18 @@ namespace suota_pgp
         {
             SelectedFileName = null;
             Files.Clear();
+
             State = State.Loading;
             var wareFiles = await _fileManager.GetFirmwareFileNames();
-            foreach (var wareFile in wareFiles)
+
+            if (wareFiles != null)
             {
-                Files.Add(wareFile);
+                foreach (var wareFile in wareFiles)
+                {
+                    Files.Add(wareFile);
+                }
             }
+
             State = State.Idle;
         }
 
@@ -166,7 +196,8 @@ namespace suota_pgp
                 return;
             }
 
-            _suotaManager.BeginSuota(SelectedDevice, SelectedFileName);
+            _suotaManager.RunSuota(SelectedDevice, SelectedFileName);
+            _navigationService.NavigateAsync("SuotaView");
         }
         
         /// <summary>
@@ -208,8 +239,8 @@ namespace suota_pgp
 
         public override void OnNavigatedTo(INavigationParameters parameters)
         {
-            GetPairedPgp();
-            RefreshFirmwares();
+            //GetPairedPgp();
+            //RefreshFirmwares();
         }
 
         public override void OnNavigatingTo(INavigationParameters parameters) { }

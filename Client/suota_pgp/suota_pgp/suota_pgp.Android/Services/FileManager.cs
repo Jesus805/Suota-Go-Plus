@@ -8,13 +8,17 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Xamarin.Forms;
 
 namespace suota_pgp.Droid.Services
 {
-    public class FileManager : IFileManager
+    internal class FileManager : BaseManager, IFileManager
     {
         private IEventAggregator _aggregator;
         private readonly ILoggerFacade _logger;
+        /// <summary>
+        /// Firmware search directory.
+        /// </summary>
         private readonly string _path;
 
         /// <summary>
@@ -23,8 +27,56 @@ namespace suota_pgp.Droid.Services
         private byte[] _firmware;
 
         /// <summary>
+        /// File CRC.
+        /// </summary>
+        private byte _crc;
+        public byte Crc
+        {
+            get => _crc;
+            set => SetProperty(ref _crc, value);
+        }
+
+        /// <summary>
+        /// File size.
+        /// </summary>
+        private int _fileSize;
+        public int FileSize
+        {
+            get => _fileSize;
+            set => SetProperty(ref _fileSize, value);
+        }
+
+        /// <summary>
+        /// Valid Flag Patch
+        /// </summary>
+        private byte[] _patch;
+        public byte[] Patch
+        {
+            get => _patch;
+            private set => SetProperty(ref _patch, value);
+        }
+
+        private byte[] _header;
+        public byte[] Header
+        {
+            get => _header;
+            set => SetProperty(ref _header, value);
+        }
+
+        /// <summary>
+        /// Number of blocks.
+        /// </summary>
+        private int _numOfBlocks;
+        public int NumOfBlocks
+        {
+            get => _numOfBlocks;
+            private set => SetProperty(ref _numOfBlocks, value);
+        }
+
+        /// <summary>
         /// Initialize a new instance of 'FileManager'.
         /// </summary>
+        /// <param name="aggregator">Prism Dependency Injected IEventAggregator.</param>
         /// <param name="logger">Prism Dependency Injected ILoggerFacade.</param>
         public FileManager(IEventAggregator aggregator,
                            ILoggerFacade logger)
@@ -34,34 +86,18 @@ namespace suota_pgp.Droid.Services
             _path = Android.OS.Environment.ExternalStorageDirectory.AbsolutePath + "/" +
                     Resources.appFolderNameString;
 
-            File dir = new File(_path);
-            if (!IsExternalStorageAccessible(dir))
-            {
-                _logger.Log("ExternalStorage was not mounted or is readonly", Category.Exception, Priority.High);
-                return;
-            }
+            Patch = new byte[Constants.PatchLength];
+            Header = new byte[Constants.HeaderSize];
 
-            if (!dir.Exists())
-            {
-                try
-                {
-                    dir.Mkdir();
-                    _logger.Log("Created \"" + Resources.appFolderNameString +
-                                "\" directory", Category.Info, Priority.None);
-                }
-                catch
-                {
-                    _logger.Log("Unable to create \"" + Resources.appFolderNameString +
-                                "\" directory", Category.Exception, Priority.High);
-                }
-            }
+            // TODO: Probably remove and add when "permissions are enabled"
+            //CreateAppFolder();
         }
 
         /// <summary>
         /// Load firmware from a file.
         /// </summary>
         /// <param name="fileName">Firmware filename</param>
-        public async void LoadFirmware(string fileName)
+        public void LoadFirmware(string fileName)
         {
             _firmware = null;
 
@@ -75,35 +111,109 @@ namespace suota_pgp.Droid.Services
 
             string filePath = _path + "/" + fileName;
 
-            File file = new File(filePath);
-
-            if (!file.Exists())
+            if (!System.IO.File.Exists(filePath))
             {
                 _logger.Log("Unable to load firmware file, file does not exist.", Category.Exception, Priority.High);
+                return;
             }
-
-            _firmware = new byte[file.Length()];
-            var temp = new char[file.Length()];
-
-            BufferedReader reader = new BufferedReader(new FileReader(file));
 
             _logger.Log("Reading file...", Category.Info, Priority.None);
             try
             {
-                await reader.ReadAsync(temp);
-                for (int i = 0; i < file.Length(); i++)
-                {
-                    _firmware[i] = (byte)temp[i];
-                }
+                _firmware = System.IO.File.ReadAllBytes(filePath);
+
+                FileSize = _firmware.Length;
 
                 _logger.Log("Read file complete", Category.Info, Priority.None);
                 _aggregator.GetEvent<PrismEvents.FileLoadedEvent>().Publish();
+
+                NumOfBlocks = FileSize / Constants.BlockSize +
+                            ((FileSize % Constants.BlockSize == 0) ? 0 : 1);
+
+                // Populate patch
+                for (int i = 0; i < Constants.PatchLength; i++)
+                {
+                    Patch[i] = _firmware[i + 2];
+                }
+
+                for (int i = 0; i < Constants.HeaderSize; i++)
+                {
+                    Header[i] = _firmware[i];
+                }
+
+                // Extract imagesize from firmware
+                int imageSize = (_firmware[7] << 24) | (_firmware[6] << 16) |
+                                (_firmware[5] << 8) | (_firmware[4]);
+
+                // Add 5 bytes to send the patch
+                imageSize += 6;
+
+                // Write new image size to firmware image header
+                for (int i = 0; i < 4; i++)
+                {
+                    _firmware[4 + i] = (byte)((imageSize >> (8 * i)) & 0xFF);
+                }
+
+                CalculateCRC();
             }
-            catch
+            catch (Exception e)
             {
-                _logger.Log("Unable to read file", Category.Exception, Priority.High);
+                _logger.Log($"Unable to read file. Reason: {e.Message}", Category.Exception, Priority.High);
                 _firmware = null;
+                FileSize = 0;
+                NumOfBlocks = 0;
             }
+        }
+
+        /// <summary>
+        /// Get all chunks in the block.
+        /// </summary>
+        /// <param name="blockIndex">Block number to get.</param>
+        /// <returns>The block at the index.</returns>
+        public List<byte[]> GetChunks(int blockIndex)
+        {
+            int startIndex = blockIndex * Constants.BlockSize;
+
+            int blockSize;
+
+            if (startIndex + Constants.BlockSize > FileSize)
+            {
+                blockSize = FileSize - startIndex;
+            }
+            else
+            {
+                blockSize = Constants.BlockSize;
+            }
+
+            // Add another chunk if there is a remainder
+            int numOfChunks = blockSize / Constants.ChunkSize +
+                            ((blockSize % Constants.ChunkSize == 0) ? 0 : 1);
+
+            List<byte[]> chunks = new List<byte[]>(numOfChunks);
+
+            int bytesLeft = blockSize;
+
+            for (int i = 0; i < numOfChunks; i++)
+            {
+                if (bytesLeft >= Constants.ChunkSize)
+                {
+                    chunks.Add(new byte[Constants.ChunkSize]);
+                    bytesLeft -= Constants.ChunkSize;
+                }
+                else
+                {
+                    chunks.Add(new byte[bytesLeft]);
+                    bytesLeft = 0;
+                }
+
+                for (int j = 0; j < chunks[i].Length; j++)
+                {
+                    int index = startIndex + (i * Constants.ChunkSize) + j;
+                    chunks[i][j] = _firmware[index];
+                }
+            }
+
+            return chunks;
         }
 
         /// <summary>
@@ -124,13 +234,24 @@ namespace suota_pgp.Droid.Services
             }
 
             var files = await dir.ListFilesAsync();
-
-            foreach (var file in files)
+            if (files != null)
             {
-                if (file.Name.EndsWith(".img"))
+                foreach (var file in files)
                 {
-                    fileNames.Add(file.Name);
+                    if (file.Name.EndsWith(".img"))
+                    {
+                        fileNames.Add(file.Name);
+                    }
                 }
+
+                if (fileNames.Count == 0)
+                {
+                    ShowShortToast("No files found. Please make sure the firmware file is in the \'PgpExtractor\' folder.");
+                }
+            }
+            else
+            {
+                ShowShortToast("Storage inaccessible. Please make sure that storage permissions are enabled.");
             }
 
             return fileNames;
@@ -139,12 +260,12 @@ namespace suota_pgp.Droid.Services
         /// <summary>
         /// Save Pokemon Go Plus Device Info to external storage.
         /// </summary>
-        /// <param name="info">Device Info to save.</param>
-        public async void SaveDeviceInfo(DeviceInfo info)
+        /// <param name="device">Device Info to save.</param>
+        public async void Save(GoPlus device)
         {
             _logger.Log("Attempting to Save DeviceInfo", Category.Info, Priority.None);
 
-            if (info == null)
+            if (device == null)
             {
                 _logger.Log("DeviceInfo was null", Category.Exception, Priority.High);
                 return;
@@ -172,48 +293,46 @@ namespace suota_pgp.Droid.Services
                 }
             }
 
-            string json = SerializeDeviceInfo(info);
+            string json = Serialize(device);
 
             string fileName = Resources.appFileNameString + " " +
                               DateTime.Now.ToString().Replace(':', '-').Replace('/', '-') + 
                               ".json";
 
-            BufferedWriter writer = new BufferedWriter(new FileWriter(_path + "/" + fileName));
-
             try
             {
-                _logger.Log("Writing to file \"" + fileName + "\"", Category.Info, Priority.None);
-                await writer.WriteAsync(json);
+                using (System.IO.StreamWriter sw = new System.IO.StreamWriter(_path + "/" + fileName))
+                {
+                    _logger.Log("Writing to file \"" + fileName + "\"", Category.Info, Priority.None);
+                    await sw.WriteAsync(json);
+                    ShowShortToast($"Saved to {_path + "/" + fileName}");
+                }
             }
             catch
             {
+                ShowShortToast("Unable to write key file. Make sure you have storage permissions enabled.");
                 _logger.Log("Error writing to file \"" + fileName + "\"", Category.Exception, Priority.None);
-                return;
-            }
-            finally
-            {
-                writer.Close();
             }
         }
 
         /// <summary>
         /// Serialize Pokemon Go Plus Device Info to JSON format.
         /// </summary>
-        /// <param name="info">Device Info to serialize.</param>
+        /// <param name="device">Device Info to serialize.</param>
         /// <returns>string in JSON format.</returns>
-        private string SerializeDeviceInfo(DeviceInfo info)
+        private string Serialize(GoPlus device)
         {
             // Save as JSON
             StringBuilder sb = new StringBuilder();
             sb.Append("{\n");
             sb.Append("  \"bluetooth\": \"");
-            sb.Append(info.BtAddress);
+            sb.Append(device.BtAddress);
             sb.Append("\",\n");
             sb.Append("  \"key\": \"");
-            sb.Append(info.Key);
+            sb.Append(device.Key);
             sb.Append("\",\n");
             sb.Append("  \"blob\": \"");
-            sb.Append(info.Blob);
+            sb.Append(device.Blob);
             sb.Append("\"\n}");
             return sb.ToString();
         }
@@ -225,8 +344,63 @@ namespace suota_pgp.Droid.Services
         /// <returns>true if read/writable, false otherwise.</returns>
         private bool IsExternalStorageAccessible(File dir)
         {
+            if (dir == null)
+            {
+                return false;
+            }
+
             string state = Android.OS.Environment.GetExternalStorageState(dir);
             return Android.OS.Environment.MediaMounted.Equals(state);
+        }
+
+        /// <summary>
+        /// Create PgpExtractor folder in the external drive.
+        /// </summary>
+        private void CreateAppFolder()
+        {
+            File dir = new File(_path);
+            if (!IsExternalStorageAccessible(dir))
+            {
+                _logger.Log("ExternalStorage was not mounted or is readonly", Category.Exception, Priority.High);
+                return;
+            }
+
+            if (!dir.Exists())
+            {
+                try
+                {
+                    dir.Mkdir();
+                    _logger.Log("Created \"" + Resources.appFolderNameString +
+                                "\" directory", Category.Info, Priority.None);
+                }
+                catch
+                {
+                    _logger.Log("Unable to create \"" + Resources.appFolderNameString +
+                                "\" directory", Category.Exception, Priority.High);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Calculate firmware CRC. 
+        /// </summary>
+        /// <param name="firmware">Contents of the firmware file.</param>
+        private void CalculateCRC()
+        {
+            byte crc = 0;
+
+            for (int i = 0; i < _firmware.Length; i++)
+            {
+                crc ^= _firmware[i];
+            }
+
+            // Add ValidFlag to CRC calculation.
+            for (int i = 0; i < Constants.PatchLength; i++)
+            {
+                crc ^= Patch[i];
+            }
+
+            //Crc = crc;
         }
     }
 }
