@@ -9,13 +9,15 @@ namespace suota_pgp.Model
 
         public const int MemoryBank = 1;
 
-        public const int PatchMemAddress = 0x8002;
+        public const int PatchAddress = 0x8002;
 
         public const int PatchLength = 6;
 
         public const int RetryCount = 3;
 
-        public const int HeaderSize = 0x20;
+        public const int HeaderSize = 0x40;
+
+        public const int DelayMS = 10;
 
         /// <summary>
         /// Suota Commands

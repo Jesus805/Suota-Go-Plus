@@ -9,6 +9,8 @@
     <ContentPage.Resources>
         <ResourceDictionary>
             <local:ScanStateToBoolConverter x:Key="ss2b"/>
+            <local:ErrorStateToGridLengthConverter x:Key="s2gl"/>
+            <local:ErrorStateToStringConverter x:Key="es2s"/>
         </ResourceDictionary>
     </ContentPage.Resources>
     <ContentPage.Content>
@@ -18,13 +20,36 @@
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
+                <RowDefinition Height="{Binding ErrorState,
+                                        Converter={StaticResource s2gl}}"/>
+                <RowDefinition Height="auto"/>
                 <RowDefinition Height="auto"/>
                 <RowDefinition />
+                <RowDefinition Height="auto"/>
                 <RowDefinition Height="auto"/>
                 <RowDefinition />
                 <RowDefinition Height="auto"/>
             </Grid.RowDefinitions>
-            <Button Grid.Row="0"
+            <Grid Grid.Row="0"
+                  Grid.Column="0"
+                  Grid.ColumnSpan="2"
+                  BackgroundColor="Red">
+                <Label FontSize="Medium"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center"
+                       Text="{Binding ErrorState, 
+                              Converter={StaticResource es2s}}"
+                       TextColor="White"/>
+            </Grid>
+            <Label Grid.Row="1"
+                   Grid.Column="0"
+                   Grid.ColumnSpan="2"
+                   Text="Patched Pokemon GO Plus"
+                   HorizontalOptions="Center"
+                   Margin="10"
+                   FontSize="Medium"/>
+            
+            <Button Grid.Row="2"
                     Grid.Column="0"
                     Grid.ColumnSpan="2"
                     Margin="10"
@@ -35,7 +60,7 @@
                                         ConverterParameter='inverse'}"
                     HorizontalOptions="Center"/>
             
-            <Button Grid.Row="0"
+            <Button Grid.Row="2"
                     Grid.Column="0"
                     Grid.ColumnSpan="2"
                     Margin="10"
@@ -44,8 +69,8 @@
                     IsVisible="{Binding State, 
                                         Converter={StaticResource ss2b}}"
                     HorizontalOptions="Center"/>
-            
-            <ListView Grid.Row="1"
+
+            <ListView Grid.Row="3"
                       Grid.Column="0"
                       Grid.ColumnSpan="2"
                       ItemsSource="{Binding Devices}"
@@ -64,20 +89,20 @@
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
-            
-            <Button Grid.Row="2"
+
+            <Button Grid.Row="5"
                     Grid.Column="0"
                     Margin="10"
                     Text="Get Device Info"
                     Command="{Binding GetDeviceInfoCommand}"/>
             
-            <Button Grid.Row="2"
+            <Button Grid.Row="5"
                     Grid.Column="1"
                     Margin="10"
                     Text="Restore PGP"
                     Command="{Binding RestoreCommand}"/>
             
-            <Grid Grid.Row="3"
+            <Grid Grid.Row="6"
                   Grid.Column="0"
                   Grid.ColumnSpan="2">
                 <Grid.RowDefinitions>
@@ -120,7 +145,7 @@
                        Margin="0,0,10,0"/>
             </Grid>
             
-            <Button Grid.Row="4"
+            <Button Grid.Row="7"
                     Grid.Column="0"
                     Grid.ColumnSpan="2"
                     Text="Save"

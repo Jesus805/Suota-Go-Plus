@@ -9,9 +9,9 @@ namespace suota_pgp
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             bool result;
-            if (value is State state)
+            if (value is AppState state)
             {
-                result = (state == State.Scanning);
+                result = (state == AppState.Scanning);
             }
             else
             {

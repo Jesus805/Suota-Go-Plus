@@ -9,13 +9,9 @@
     <ContentPage.Resources>
         <ResourceDictionary>
             <local:ScanStateToBoolConverter x:Key="ss2b"/>
+            <local:ErrorStateToGridLengthConverter x:Key="s2gl"/>
+            <local:ErrorStateToStringConverter x:Key="es2s"/>
         </ResourceDictionary>
-        <!--
-        <Style TargetType="Label" BasedOn="Label">
-            <Setter Property="TextColor" Value="Black" />
-            <Setter Property="FontSize" Value="Medium" />
-        </Style>
-        -->
     </ContentPage.Resources>
     <ContentPage.Content>
         <Grid>
@@ -24,6 +20,8 @@
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
+                <RowDefinition Height="{Binding ErrorState,
+                                        Converter={StaticResource s2gl}}"/>
                 <RowDefinition Height="auto"/>
                 <RowDefinition Height="auto"/>
                 <RowDefinition />
@@ -32,20 +30,31 @@
                 <RowDefinition />
                 <RowDefinition Height="auto"/>
             </Grid.RowDefinitions>
-            <Label Grid.Row="0"
+            <Grid Grid.Row="0"
+                  Grid.Column="0"
+                  Grid.ColumnSpan="2"
+                  BackgroundColor="Red">
+                <Label FontSize="Medium"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center"
+                       Text="{Binding ErrorState, 
+                              Converter={StaticResource es2s}}"
+                       TextColor="White"/>
+            </Grid>
+            <Label Grid.Row="1"
                    Grid.Column="0"
                    Grid.ColumnSpan="2"
                    Text="Paired Pokemon GO Plus"
                    HorizontalOptions="Center"
                    Margin="10"
                    FontSize="Medium"/>
-            <Button Grid.Row="1"
+            <Button Grid.Row="2"
                     Grid.Column="0"
                     Grid.ColumnSpan="2"
                     Text="Refresh"
                     Command="{Binding GetPairedPgpCommand}"
                     HorizontalOptions="Center"/>
-            <ListView Grid.Row="2"
+            <ListView Grid.Row="3"
                       Grid.Column="0"
                       Grid.ColumnSpan="2"
                       ItemsSource="{Binding Devices}"
@@ -64,23 +73,23 @@
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
-            <Label Grid.Row="3"
+            <Label Grid.Row="4"
                    Grid.Column="0"
                    Grid.ColumnSpan="2"
                    Text="Firmware File"
                    HorizontalOptions="Center"
                    Margin="10"
                    FontSize="Medium"/>
-            <Button Grid.Row="4"
+            <Button Grid.Row="5"
                     Grid.Column="0"
                     Grid.ColumnSpan="2"
                     Text="Refresh"
                     Command="{Binding RefreshFilesCommand}"
                     HorizontalOptions="Center"/>
-            <ListView Grid.Row="5"
+            <ListView Grid.Row="6"
                       Grid.Column="0"
                       Grid.ColumnSpan="2"
-                      ItemsSource="{Binding Files}"
+                      ItemsSource="{Binding FileNames}"
                       SelectedItem="{Binding SelectedFileName}"
                       SelectionMode="Single">
                 <ListView.ItemTemplate>
@@ -92,7 +101,7 @@
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
-            <Button Grid.Row="6"
+            <Button Grid.Row="7"
                     Grid.Column="0"
                     Grid.ColumnSpan="2"
                     Text="Start Patch"

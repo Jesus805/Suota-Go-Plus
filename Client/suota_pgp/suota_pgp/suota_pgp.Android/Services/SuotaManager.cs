@@ -1,4 +1,5 @@
-﻿using Plugin.Permissions;
+﻿using Plugin.CurrentActivity;
+using Plugin.Permissions;
 using Prism.Events;
 using Prism.Logging;
 using suota_pgp.Model;
@@ -6,7 +7,6 @@ using suota_pgp.Services;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Xamarin.Forms;
 
 namespace suota_pgp.Droid.Services
 {
@@ -17,7 +17,7 @@ namespace suota_pgp.Droid.Services
         private IFileManager _fileManager;
         private ILoggerFacade _logger;
         private bool _invalidImgBankExpected;
-        private GoPlus _SuotaDevice;
+        private GoPlus _suotaDevice;
         private int _progressPercent;
         private object propLock = new object();
 
@@ -73,10 +73,11 @@ namespace suota_pgp.Droid.Services
         /// <param name="bleManager">Prism dependency injected 'IBleManager'</param>
         /// <param name="fileManager">Prism dependency injected 'IFileManager'</param>
         /// <param name="logger">Prism dependency injected 'ILoggerFacade'</param>
-        public SuotaManager(IEventAggregator aggregator,
+        public SuotaManager(ICurrentActivity activity,
+                            IEventAggregator aggregator,
                             IBleManager bleManager,
                             IFileManager fileManager,
-                            ILoggerFacade logger)
+                            ILoggerFacade logger) : base(activity)
         {
             _aggregator = aggregator;
             _bleManager = bleManager;
@@ -126,6 +127,7 @@ namespace suota_pgp.Droid.Services
                 throw new ArgumentNullException("fileName");
             }
 
+            _aggregator.GetEvent<PrismEvents.AppStateChangedEvent>().Publish(AppState.Suota);
             _aggregator.GetEvent<PrismEvents.ProgressUpdateEvent>().Publish(new Progress(_progressPercent++, "Loading Firmware"));
             
             // Load the file into memory and build blocks.
@@ -166,7 +168,7 @@ namespace suota_pgp.Droid.Services
             // commands from the same characteristic.
             CancelRequested = true;
             int exitCommand = Constants.SpotaMemServiceExit << 24;
-            await _bleManager.WriteCharacteristic(_SuotaDevice,
+            await _bleManager.WriteCharacteristic(_suotaDevice,
                                                   Constants.SpotaMemDevUuid,
                                                   exitCommand);
         }
@@ -178,7 +180,7 @@ namespace suota_pgp.Droid.Services
         {
             _isSuotaActive = false;
             _invalidImgBankExpected = false;
-            _SuotaDevice = null;
+            _suotaDevice = null;
             _progressPercent = 0;
             SuotaFailure = false;
         }
@@ -198,19 +200,17 @@ namespace suota_pgp.Droid.Services
 
             try
             {
-                await Task.Delay(1000);
-                await _bleManager.ConnectDevice(_SuotaDevice);
+                await _bleManager.ConnectDevice(_suotaDevice);
 
-                await Task.Delay(1000);
                 // Begin listening to service status to intercept any errors and MemType confirmation.
                 _logger.Log("Listening to SPOTA Service Status Characteristic", Category.Info, Priority.None);
-                await _bleManager.NotifyRegister(_SuotaDevice, Constants.SpotaServStatusUuid);
+                await _bleManager.NotifyRegister(_suotaDevice, Constants.SpotaServStatusUuid);
 
                 // Set MemType
                 int memType = (Constants.SpiMemoryType << 24) | Constants.MemoryBank;
                 _logger.Log($"Setting MemType to 0x{memType.ToString("x2")}", Category.Info, Priority.None);
                 _aggregator.GetEvent<PrismEvents.ProgressUpdateEvent>().Publish(new Progress(_progressPercent++, $"Setting MemType to 0x{memType.ToString("x2")}"));
-                await _bleManager.WriteCharacteristic(_SuotaDevice, Constants.SpotaMemDevUuid, memType);
+                await _bleManager.WriteCharacteristic(_suotaDevice, Constants.SpotaMemDevUuid, memType);
             }
             catch (Exception)
             {
@@ -235,13 +235,13 @@ namespace suota_pgp.Droid.Services
                               (Constants.SpiCs << 8) | (Constants.SpiSck);
                 _aggregator.GetEvent<PrismEvents.ProgressUpdateEvent>().Publish(new Progress(_progressPercent++, $"Writing 0x{gpioMap.ToString("x2")} to GPIO Characteristic."));
                 _logger.Log($"Writing 0x{gpioMap.ToString("x2")} to GPIO Characteristic.", Category.Info, Priority.None);
-                await _bleManager.WriteCharacteristic(_SuotaDevice,
+                await _bleManager.WriteCharacteristic(_suotaDevice,
                                                       Constants.SpotaGpioMapUuid,
                                                       gpioMap);
                 _aggregator.GetEvent<PrismEvents.ProgressUpdateEvent>().Publish(new Progress(_progressPercent++, $"Writing {Constants.BlockSize} to SPOTA patch length"));
                 // Set SPOTA Patch Length
                 _logger.Log($"Writing {Constants.BlockSize} to SPOTA patch length", Category.Info, Priority.None);
-                await _bleManager.WriteCharacteristic(_SuotaDevice,
+                await _bleManager.WriteCharacteristic(_suotaDevice,
                                                       Constants.SpotaPatchLenUuid,
                                                       (short)Constants.BlockSize);
 
@@ -266,7 +266,7 @@ namespace suota_pgp.Droid.Services
                             _aggregator.GetEvent<PrismEvents.ProgressUpdateEvent>().Publish(new Progress(_progressPercent++, $"Writing {finalBlockSize} to SPOTA patch length"));
                             // Set SPOTA Patch Length with last blocksize
                             _logger.Log($"Writing {finalBlockSize} to SPOTA patch length", Category.Info, Priority.None);
-                            await _bleManager.WriteCharacteristic(_SuotaDevice,
+                            await _bleManager.WriteCharacteristic(_suotaDevice,
                                                                   Constants.SpotaPatchLenUuid,
                                                                   finalBlockSize);
                         }
@@ -277,10 +277,9 @@ namespace suota_pgp.Droid.Services
                     foreach (byte[] chunk in chunks)
                     {
                         _logger.Log($"Writing block: {i + 1} chunk: {j++}", Category.Info, Priority.None);
-                        await _bleManager.WriteCharacteristic(_SuotaDevice,
+                        await _bleManager.WriteCharacteristic(_suotaDevice,
                                                               Constants.SpotaPatchDataUuid,
                                                               chunk, true);
-                        await Task.Delay(10);
                     }
                 }
 
@@ -301,12 +300,12 @@ namespace suota_pgp.Droid.Services
         {
             // Set SPOTA Patch Length with last blocksize
             _logger.Log($"Writing 1 to SPOTA patch length for CRC", Category.Info, Priority.None);
-            await _bleManager.WriteCharacteristic(_SuotaDevice,
+            await _bleManager.WriteCharacteristic(_suotaDevice,
                                                   Constants.SpotaPatchLenUuid,
                                                   (short)1);
 
             _logger.Log($"Writing CRC", Category.Info, Priority.None);
-            await _bleManager.WriteCharacteristic(_SuotaDevice,
+            await _bleManager.WriteCharacteristic(_suotaDevice,
                                                   Constants.SpotaPatchDataUuid,
                                                   _fileManager.Crc, true);
         }
@@ -319,13 +318,13 @@ namespace suota_pgp.Droid.Services
             _invalidImgBankExpected = true;
 
             // Calculate new address
-            int address = Constants.PatchMemAddress - _fileManager.FileSize;
+            int address = Constants.PatchAddress - _fileManager.FileSize;
             // Create command
             int memType = (Constants.SpiMemoryType << 24) | address;
 
             _aggregator.GetEvent<PrismEvents.ProgressUpdateEvent>().Publish(new Progress(_progressPercent++, $"Patching Header: Setting MemType to 0x{memType.ToString("x2")}"));
             _logger.Log($"Setting MemType to 0x{memType.ToString("x2")}", Category.Info, Priority.None);
-            await _bleManager.WriteCharacteristic(_SuotaDevice, Constants.SpotaMemDevUuid, memType);
+            await _bleManager.WriteCharacteristic(_suotaDevice, Constants.SpotaMemDevUuid, memType);
         }
 
         /// <summary>
@@ -336,13 +335,13 @@ namespace suota_pgp.Droid.Services
             _aggregator.GetEvent<PrismEvents.ProgressUpdateEvent>().Publish(new Progress(_progressPercent++, $"Writing 0x05 to SPOTA patch length"));
             // Set SPOTA Patch Length to the header size
             _logger.Log($"Writing {Constants.PatchLength} to SPOTA patch length", Category.Info, Priority.None);
-            await _bleManager.WriteCharacteristic(_SuotaDevice,
+            await _bleManager.WriteCharacteristic(_suotaDevice,
                                                   Constants.SpotaPatchLenUuid,
                                                   (short)Constants.PatchLength);
 
             _aggregator.GetEvent<PrismEvents.ProgressUpdateEvent>().Publish(new Progress(_progressPercent++, "Patching Valid Flag"));
             // Send SPOTA Patch Data
-            await _bleManager.WriteCharacteristic(_SuotaDevice,
+            await _bleManager.WriteCharacteristic(_suotaDevice,
                                                   Constants.SpotaPatchDataUuid,
                                                   _fileManager.Patch, true);
 
@@ -354,7 +353,7 @@ namespace suota_pgp.Droid.Services
             _aggregator.GetEvent<PrismEvents.ProgressUpdateEvent>().Publish(new Progress(_progressPercent++, $"Sending Image End command."));
             _logger.Log($"Sending Image End command.", Category.Info, Priority.None);
             int imgEndCommand = Constants.SpotaImgEnd << 24;
-            await _bleManager.WriteCharacteristic(_SuotaDevice,
+            await _bleManager.WriteCharacteristic(_suotaDevice,
                                                   Constants.SpotaMemDevUuid,
                                                   imgEndCommand);
         }
@@ -364,7 +363,7 @@ namespace suota_pgp.Droid.Services
             int memType = (Constants.SpiMemoryType << 24) | Constants.MemoryBank;
             _logger.Log($"Setting MemType to 0x{memType.ToString("x2")}", Category.Info, Priority.None);
             _aggregator.GetEvent<PrismEvents.ProgressUpdateEvent>().Publish(new Progress(_progressPercent++, $"Setting MemType to 0x{memType.ToString("x2")}"));
-            await _bleManager.WriteCharacteristic(_SuotaDevice, Constants.SpotaMemDevUuid, memType);
+            await _bleManager.WriteCharacteristic(_suotaDevice, Constants.SpotaMemDevUuid, memType);
         }
 
         private async void RevertStepTwo()
@@ -374,21 +373,34 @@ namespace suota_pgp.Droid.Services
                           (Constants.SpiCs << 8) | (Constants.SpiSck);
             _aggregator.GetEvent<PrismEvents.ProgressUpdateEvent>().Publish(new Progress(_progressPercent++, $"Writing 0x{gpioMap.ToString("x2")} to GPIO Characteristic."));
             _logger.Log($"Writing 0x{gpioMap.ToString("x2")} to GPIO Characteristic.", Category.Info, Priority.None);
-            await _bleManager.WriteCharacteristic(_SuotaDevice,
+            await _bleManager.WriteCharacteristic(_suotaDevice,
                                                   Constants.SpotaGpioMapUuid,
                                                   gpioMap);
-            _aggregator.GetEvent<PrismEvents.ProgressUpdateEvent>().Publish(new Progress(_progressPercent++, $"Writing {Constants.BlockSize} to SPOTA patch length"));
+
+            _aggregator.GetEvent<PrismEvents.ProgressUpdateEvent>().Publish(new Progress(_progressPercent++, $"Writing {Constants.HeaderSize} to SPOTA patch length"));
             // Set SPOTA Patch Length
             _logger.Log($"Writing {Constants.HeaderSize} to SPOTA patch length", Category.Info, Priority.None);
-            await _bleManager.WriteCharacteristic(_SuotaDevice,
+            await _bleManager.WriteCharacteristic(_suotaDevice,
                                                   Constants.SpotaPatchLenUuid,
                                                   (short)Constants.HeaderSize);
 
-            await _bleManager.WriteCharacteristic(_SuotaDevice,
-                                                  Constants.SpotaPatchDataUuid,
-                                                  _fileManager.Header);
+            _aggregator.GetEvent<PrismEvents.ProgressUpdateEvent>().Publish(new Progress(_progressPercent++, $"Writing Block"));
+            // Set SPOTA Patch Length
+            List<byte[]> chunks = _fileManager.GetHeaderChunks();
+            for (int i = 0; i < chunks.Count; i++)
+            {
+                _logger.Log($"Writing Block", Category.Info, Priority.None);
+                await _bleManager.WriteCharacteristic(_suotaDevice,
+                                                      Constants.SpotaPatchDataUuid,
+                                                      chunks[i]);
+            }
 
-            await _bleManager.DisconnectDevice(_SuotaDevice);
+            _aggregator.GetEvent<PrismEvents.ProgressUpdateEvent>().Publish(new Progress(_progressPercent++, $"Unregistering from Service Status Notification"));
+            // Set SPOTA Patch Length
+            _logger.Log($"Unregistering from Service Status Notification", Category.Info, Priority.None);
+            await _bleManager.NotifyUnregister(_suotaDevice, Constants.SpotaServStatusUuid);
+
+            await _bleManager.DisconnectDevice(_suotaDevice);
 
             _aggregator.GetEvent<PrismEvents.ProgressUpdateEvent>().Publish(new Progress(100, "Successfully wiped out corrupted image."));
             _logger.Log("Successfully wiped out corrupted image.", Category.Info, Priority.None);
@@ -460,8 +472,9 @@ namespace suota_pgp.Droid.Services
                         break;
                     case SpotarStatusUpdate.GoPlusFailedIntegrity:
                         _logger.Log("PGP Failed integrity, no biggie, we patched the image header", Category.Info, Priority.None);
-                        _bleManager.DisconnectDevice(_SuotaDevice);
-                        _bleManager.RemoveBond(_SuotaDevice);
+                        _bleManager.NotifyUnregister(_suotaDevice, Constants.SpotaServStatusUuid);
+                        _bleManager.DisconnectDevice(_suotaDevice);
+                        _bleManager.RemoveBond(_suotaDevice);
                         _aggregator.GetEvent<PrismEvents.ProgressUpdateEvent>().Publish(new Progress(100, "Finished", true));
                         ShowDialogInfoBox("Update Complete. Please restart your Pokemon GO Plus if it doesn't show up");
                         ResetState();
@@ -501,7 +514,7 @@ namespace suota_pgp.Droid.Services
 
             _bleManager.StopScan();
 
-            _SuotaDevice = device;
+            _suotaDevice = device;
             StepOne();
         }
 

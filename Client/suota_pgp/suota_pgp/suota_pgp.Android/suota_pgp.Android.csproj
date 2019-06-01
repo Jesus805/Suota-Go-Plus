@@ -77,12 +77,14 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="ServiceEvents.cs" />
     <Compile Include="Services\BaseManager.cs" />
     <Compile Include="Services\BleManager.cs" />
     <Compile Include="Services\FileManager.cs" />
     <Compile Include="MainActivity.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\StateManager.cs" />
     <Compile Include="Services\SuotaManager.cs" />
   </ItemGroup>
   <ItemGroup>

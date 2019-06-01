@@ -18,6 +18,8 @@ namespace suota_pgp.Services
 
         List<byte[]> GetChunks(int blockIndex);
 
+        List<byte[]> GetHeaderChunks();
+
         Task<List<string>> GetFirmwareFileNames();
 
         void LoadFirmware(string fileName);

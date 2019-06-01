@@ -12,10 +12,15 @@ namespace suota_pgp.Droid.Services
     /// </summary>
     internal class BaseManager : BindableBase
     {
+        private ICurrentActivity _activity;
+
         /// <summary>
         /// Initialize a new instance of 'BaseManager'.
         /// </summary>
-        protected BaseManager() { }
+        protected BaseManager(ICurrentActivity activity)
+        {
+            _activity = activity;
+        }
 
         /// <summary>
         /// Show a long duration toast notification.
@@ -24,7 +29,7 @@ namespace suota_pgp.Droid.Services
         protected void ShowLongToast(string message)
         {
             Device.BeginInvokeOnMainThread(
-            () => Toast.MakeText(CrossCurrentActivity.Current.Activity, 
+            () => Toast.MakeText(_activity.Activity,
             message, ToastLength.Long).Show());
         }
 
@@ -35,7 +40,7 @@ namespace suota_pgp.Droid.Services
         protected void ShowShortToast(string message)
         {
             Device.BeginInvokeOnMainThread(
-            () => Toast.MakeText(CrossCurrentActivity.Current.Activity, 
+            () => Toast.MakeText(_activity.Activity,
                                  message, ToastLength.Short).Show());
         }
 
@@ -46,7 +51,7 @@ namespace suota_pgp.Droid.Services
         protected void ShowDialogInfoBox(string message)
         {
             Device.BeginInvokeOnMainThread(
-            () => new AlertDialog.Builder(CrossCurrentActivity.Current.Activity)
+            () => new AlertDialog.Builder(_activity.Activity)
                  .SetMessage(message)
                  .SetPositiveButton("OK", (sender, e) => { })
                  .Show());

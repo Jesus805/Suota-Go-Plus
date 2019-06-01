@@ -1,4 +1,5 @@
 ﻿using Java.IO;
+using Plugin.CurrentActivity;
 using Prism.Events;
 using Prism.Logging;
 using suota_pgp.Droid.Properties;
@@ -78,8 +79,9 @@ namespace suota_pgp.Droid.Services
         /// </summary>
         /// <param name="aggregator">Prism Dependency Injected IEventAggregator.</param>
         /// <param name="logger">Prism Dependency Injected ILoggerFacade.</param>
-        public FileManager(IEventAggregator aggregator,
-                           ILoggerFacade logger)
+        public FileManager(ICurrentActivity activity,
+                           IEventAggregator aggregator,
+                           ILoggerFacade logger) : base(activity)
         {
             _aggregator = aggregator;
             _logger = logger;
@@ -125,7 +127,6 @@ namespace suota_pgp.Droid.Services
                 FileSize = _firmware.Length;
 
                 _logger.Log("Read file complete", Category.Info, Priority.None);
-                _aggregator.GetEvent<PrismEvents.FileLoadedEvent>().Publish();
 
                 NumOfBlocks = FileSize / Constants.BlockSize +
                             ((FileSize % Constants.BlockSize == 0) ? 0 : 1);
@@ -210,6 +211,41 @@ namespace suota_pgp.Droid.Services
                 {
                     int index = startIndex + (i * Constants.ChunkSize) + j;
                     chunks[i][j] = _firmware[index];
+                }
+            }
+
+            return chunks;
+        }
+
+        public List<byte[]> GetHeaderChunks()
+        {
+            int blockSize = Constants.HeaderSize;
+
+            // Add another chunk if there is a remainder
+            int numOfChunks = blockSize / Constants.ChunkSize +
+                            ((blockSize % Constants.ChunkSize == 0) ? 0 : 1);
+
+            List<byte[]> chunks = new List<byte[]>(numOfChunks);
+
+            int bytesLeft = blockSize;
+
+            for (int i = 0; i < numOfChunks; i++)
+            {
+                if (bytesLeft >= Constants.ChunkSize)
+                {
+                    chunks.Add(new byte[Constants.ChunkSize]);
+                    bytesLeft -= Constants.ChunkSize;
+                }
+                else
+                {
+                    chunks.Add(new byte[bytesLeft]);
+                    bytesLeft = 0;
+                }
+
+                for (int j = 0; j < chunks[i].Length; j++)
+                {
+                    int index = (i * Constants.ChunkSize) + j;
+                    chunks[i][j] = _header[index];
                 }
             }
 
@@ -400,7 +436,7 @@ namespace suota_pgp.Droid.Services
                 crc ^= Patch[i];
             }
 
-            //Crc = crc;
+            Crc = crc;
         }
     }
 }

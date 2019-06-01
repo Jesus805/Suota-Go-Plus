@@ -1,6 +1,6 @@
 ﻿namespace suota_pgp
 {
-    public enum State
+    public enum AppState
     {
         /// <summary>
         /// Doing nothing.
@@ -18,5 +18,9 @@
         /// Loading Firmware file.
         /// </summary>
         Loading,
+        /// <summary>
+        /// Performing SUOTA.
+        /// </summary>
+        Suota,
     }
 }

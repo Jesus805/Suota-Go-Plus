@@ -5,18 +5,20 @@ namespace suota_pgp
 {
     public static class PrismEvents
     {
-        public class ScanStateChangeEvent : PubSubEvent<ScanState> { }
+        public class AppStateChangedEvent : PubSubEvent<AppState> { }
 
-        public class GoPlusFoundEvent : PubSubEvent<GoPlus> { }
-
-        public class FileLoadedEvent : PubSubEvent { }
+        public class BluetoothStateChangedEvent : PubSubEvent { }
 
         public class CharacteristicUpdatedEvent : PubSubEvent<CharacteristicUpdate> { }
 
+        public class ErrorStateChangedEvent : PubSubEvent<ErrorState> { }
+
+        public class GoPlusFoundEvent : PubSubEvent<GoPlus> { }
+
+        public class PermissionStateChangedEvent : PubSubEvent<PermissionState> { }
+
         public class ProgressUpdateEvent : PubSubEvent<Progress> { }
 
-        public class ShowShortToastEvent : PubSubEvent<string> { }
-
-        public class ShowLongToastEvent : PubSubEvent<string> { }
+        public class ScanStateChangedEvent : PubSubEvent<ScanState> { }
     }
 }

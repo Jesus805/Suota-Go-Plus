@@ -1,4 +1,5 @@
-﻿using Xamarin.Forms;
+﻿using Prism.Events;
+using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
 namespace suota_pgp

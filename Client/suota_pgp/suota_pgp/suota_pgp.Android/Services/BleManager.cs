@@ -1,6 +1,7 @@
 ﻿using Plugin.BLE;
 using Plugin.BLE.Abstractions;
 using Plugin.BLE.Abstractions.Contracts;
+using Plugin.CurrentActivity;
 using Prism.Events;
 using Prism.Logging;
 using suota_pgp.Model;
@@ -22,6 +23,8 @@ namespace suota_pgp.Droid.Services
         private ILoggerFacade _logger;
         private IBluetoothLE _ble;
         private IAdapter _adapter;
+        private IStateManager _stateManager;
+        private Dictionary<Guid, ICharacteristic> _charCache;
         private Dictionary<GoPlus, IDevice> _devicesFound;
         private List<ICharacteristic> _registeredNotifyChar;
 
@@ -29,10 +32,13 @@ namespace suota_pgp.Droid.Services
         /// Initialize a new instance of 'BleManager'.
         /// </summary>
         /// <param name="aggregator">Prism dependency injected IEventAggregator.</param>
-        public BleManager(IEventAggregator aggregator,
-                          ILoggerFacade logger)
+        public BleManager(ICurrentActivity activity,
+                          IEventAggregator aggregator,
+                          ILoggerFacade logger,
+                          IStateManager stateManager) : base(activity)
         {
             _aggregator = aggregator;
+            _charCache = new Dictionary<Guid, ICharacteristic>();
             _devicesFound = new Dictionary<GoPlus, IDevice>();
             _registeredNotifyChar = new List<ICharacteristic>();
             _ble = CrossBluetoothLE.Current;
@@ -45,6 +51,9 @@ namespace suota_pgp.Droid.Services
             _adapter.DeviceDiscovered += _adapter_DeviceDiscovered;
             _adapter.ScanTimeoutElapsed += _adapter_ScanTimeoutElapsed;
             _logger = logger;
+            _stateManager = stateManager;
+
+            SetBluetoothState(_ble.State);
         }
 
         /// <summary>
@@ -118,13 +127,13 @@ namespace suota_pgp.Droid.Services
             try
             {
                 _logger.Log("Scanning for Go+ Devices.", Category.Info, Priority.None);
-                _aggregator.GetEvent<PrismEvents.ScanStateChangeEvent>().Publish(ScanState.Running);
+                _aggregator.GetEvent<PrismEvents.ScanStateChangedEvent>().Publish(ScanState.Running);
                 await _adapter.StartScanningForDevicesAsync();
             }
             catch (Exception e)
             {
                 _logger.Log($"Unable to scan for GO+ Devices. Reason: {e.Message}", Category.Info, Priority.None);
-                _aggregator.GetEvent<PrismEvents.ScanStateChangeEvent>().Publish(ScanState.Stopped);
+                _aggregator.GetEvent<PrismEvents.ScanStateChangedEvent>().Publish(ScanState.Stopped);
             }
         }
 
@@ -135,7 +144,7 @@ namespace suota_pgp.Droid.Services
         {
             _logger.Log("Stopping scan for GO+ Devices", Category.Info, Priority.None);
             await _adapter.StopScanningForDevicesAsync();
-            _aggregator.GetEvent<PrismEvents.ScanStateChangeEvent>().Publish(ScanState.Stopped);
+            _aggregator.GetEvent<PrismEvents.ScanStateChangedEvent>().Publish(ScanState.Stopped);
         }
 
         /// <summary>
@@ -175,7 +184,6 @@ namespace suota_pgp.Droid.Services
                 throw new ArgumentException("This device does not exist in discovered devices");
             }
 
-
             // There should only be one connection at a time.
             foreach (IDevice connectedDevice in _adapter.ConnectedDevices)
             {
@@ -183,7 +191,13 @@ namespace suota_pgp.Droid.Services
                 await _adapter.DisconnectDeviceAsync(connectedDevice);
             }
 
+            _charCache.Clear();
+
             _logger.Log("Connecting to Pokemon GO Plus.", Category.Info, Priority.None);
+            
+            // Wait a bit before connecting.
+            await Task.Delay(Constants.DelayMS);
+
             for (int i = 0; i < Constants.RetryCount; i++)
             {
                 try
@@ -197,7 +211,7 @@ namespace suota_pgp.Droid.Services
                     if (i < Constants.RetryCount - 1)
                     {
                         _logger.Log($"Error connecting to Pokemon GO Plus: {e.Message}. Trying Again.", Category.Exception, Priority.High);
-                        await Task.Delay(1000);
+                        await Task.Delay(Constants.DelayMS);
                     }
                     else
                     {
@@ -226,6 +240,8 @@ namespace suota_pgp.Droid.Services
             {
                 throw new ArgumentException("This device does not exist in discovered devices");
             }
+
+            await Task.Delay(Constants.DelayMS);
 
             // Disconnect the device if connected.
             if (_adapter.ConnectedDevices.Contains(_devicesFound[device]))
@@ -301,6 +317,11 @@ namespace suota_pgp.Droid.Services
                 throw new Exception("This device does not exist in discovered devices");
             }
 
+            if (value.Length > Constants.ChunkSize)
+            {
+                throw new ArgumentException($"Length must be less than {Constants.ChunkSize}", "value");
+            }
+
             IDevice pgp = _devicesFound[device];
 
             if (!_adapter.ConnectedDevices.Contains(pgp))
@@ -308,11 +329,22 @@ namespace suota_pgp.Droid.Services
                 throw new Exception("This device is not connected");
             }
 
-            Guid serviceUuid = Constants.Char2ServiceMap[charUuid];
+            ICharacteristic characteristic;
 
-            IService service = await pgp.GetServiceAsync(serviceUuid);
+            if (_charCache.ContainsKey(charUuid))
+            {
+                characteristic = _charCache[charUuid];
+            }
+            else
+            {
+                Guid serviceUuid = Constants.Char2ServiceMap[charUuid];
 
-            ICharacteristic characteristic = await service.GetCharacteristicAsync(charUuid);
+                IService service = await pgp.GetServiceAsync(serviceUuid);
+
+                characteristic = await service.GetCharacteristicAsync(charUuid);
+
+                _charCache.Add(charUuid, characteristic);
+            }
 
             if (!characteristic.CanWrite)
             {
@@ -366,25 +398,38 @@ namespace suota_pgp.Droid.Services
             if (!_devicesFound.ContainsKey(device))
                 throw new Exception("This device does not exist in discovered devices");
             
-
             IDevice pgp = _devicesFound[device];
 
             if (!_adapter.ConnectedDevices.Contains(pgp))
                 throw new Exception("This device is not connected");
 
-            Guid serviceUuid = Constants.Char2ServiceMap[charUuid];
+            ICharacteristic characteristic;
 
-            IService service = await pgp.GetServiceAsync(serviceUuid);
+            // Wait a bit before reading.
+            await Task.Delay(Constants.DelayMS);
 
-            ICharacteristic keyChar = await service.GetCharacteristicAsync(charUuid);
+            if (_charCache.ContainsKey(charUuid))
+            {
+                characteristic = _charCache[charUuid];
+            }
+            else
+            {
+                Guid serviceUuid = Constants.Char2ServiceMap[charUuid];
 
-            if (keyChar.CanRead)
+                IService service = await pgp.GetServiceAsync(serviceUuid);
+
+                characteristic = await service.GetCharacteristicAsync(charUuid);
+
+                _charCache.Add(charUuid, characteristic);
+            }
+
+            if (characteristic.CanRead)
             {
                 for (int i = 0; i < Constants.RetryCount; i++)
                 {
                     try
                     {
-                        byte[] result = await keyChar.ReadAsync();
+                        byte[] result = await characteristic.ReadAsync();
                         return result;
                     }
                     catch (Exception e)
@@ -429,11 +474,25 @@ namespace suota_pgp.Droid.Services
             if (!_adapter.ConnectedDevices.Contains(pgp))
                 throw new Exception("This device is not connected");
 
-            Guid serviceUuid = Constants.Char2ServiceMap[charUuid];
+            ICharacteristic characteristic;
 
-            IService service = await pgp.GetServiceAsync(serviceUuid);
+            // Wait a delay first
+            await Task.Delay(1000);
 
-            ICharacteristic characteristic = await service.GetCharacteristicAsync(charUuid);
+            if (_charCache.ContainsKey(charUuid))
+            {
+                characteristic = _charCache[charUuid];
+            }
+            else
+            {
+                Guid serviceUuid = Constants.Char2ServiceMap[charUuid];
+
+                IService service = await pgp.GetServiceAsync(serviceUuid);
+
+                characteristic = await service.GetCharacteristicAsync(charUuid);
+
+                _charCache.Add(charUuid, characteristic);
+            }
 
             _registeredNotifyChar.Add(characteristic);
 
@@ -464,15 +523,34 @@ namespace suota_pgp.Droid.Services
             if (!_adapter.ConnectedDevices.Contains(pgp))
                 throw new Exception("This device is not connected");
 
-            Guid serviceUuid = Constants.Char2ServiceMap[charUuid];
+            ICharacteristic characteristic;
 
-            IService service = await pgp.GetServiceAsync(serviceUuid);
+            // Wait a delay first
+            await Task.Delay(Constants.DelayMS);
 
-            ICharacteristic characteristic = await service.GetCharacteristicAsync(charUuid);
+            if (_charCache.ContainsKey(charUuid))
+            {
+                characteristic = _charCache[charUuid];
+            }
+            else
+            {
+                Guid serviceUuid = Constants.Char2ServiceMap[charUuid];
+
+                IService service = await pgp.GetServiceAsync(serviceUuid);
+
+                characteristic = await service.GetCharacteristicAsync(charUuid);
+
+                _charCache.Add(charUuid, characteristic);
+            }
 
             characteristic.ValueUpdated -= KeyChar_ValueUpdated;
 
             await characteristic.StopUpdatesAsync();
+        }
+
+        private void SetBluetoothState(BluetoothState state)
+        {
+            _aggregator.GetEvent<ManagerEvents.BluetoothStateChangedEvent>().Publish(state);
         }
 
         #region Events
@@ -538,7 +616,7 @@ namespace suota_pgp.Droid.Services
         private void _adapter_ScanTimeoutElapsed(object sender, EventArgs e)
         {
             _logger.Log($"Scanning timeout elapsed.", Category.Info, Priority.None);
-            _aggregator.GetEvent<PrismEvents.ScanStateChangeEvent>().Publish(ScanState.Stopped);
+            _aggregator.GetEvent<PrismEvents.ScanStateChangedEvent>().Publish(ScanState.Stopped);
         }
 
         private void _adapter_DeviceConnected(object sender, Plugin.BLE.Abstractions.EventArgs.DeviceEventArgs e)
@@ -556,8 +634,14 @@ namespace suota_pgp.Droid.Services
             _logger.Log($"Connection lost from {e.Device.Name}", Category.Info, Priority.None);
         }
 
+        public object GetBleState()
+        {
+            return _ble.State;
+        }
+
         private void _ble_StateChanged(object sender, Plugin.BLE.Abstractions.EventArgs.BluetoothStateChangedArgs e)
         {
+            SetBluetoothState(e.NewState);
         }
 
         #endregion

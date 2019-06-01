@@ -3,6 +3,8 @@ using Prism.Events;
 using Prism.Navigation;
 using suota_pgp.Model;
 using suota_pgp.Services;
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 namespace suota_pgp
@@ -20,18 +22,33 @@ namespace suota_pgp
         private ISuotaManager _suotaManager;
         private INavigationService _navigationService;
 
+        private ErrorState _errorState;
+        public ErrorState ErrorState
+        {
+            get => _errorState;
+            set
+            {
+                if (SetProperty(ref _errorState, value))
+                {
+                    BeginSuotaCommand.RaiseCanExecuteChanged();
+                    GetPairedPgpCommand.RaiseCanExecuteChanged();
+                    RefreshFilesCommand.RaiseCanExecuteChanged();
+                }
+            }
+        }
+
         /// <summary>
-        /// List of Go+ Devices.
+        /// List of GO+ devices.
         /// </summary>
         public ObservableCollection<GoPlus> Devices { get; private set; }
 
         /// <summary>
-        /// List of files with a .img extension.
+        /// List of firmware files with a .img extension.
         /// </summary>
-        public ObservableCollection<string> Files { get; private set; }
+        public ObservableCollection<string> FileNames { get; private set; }
 
         /// <summary>
-        /// 
+        /// Selected GO+ device.
         /// </summary>
         private GoPlus _selectedDevice;
         public GoPlus SelectedDevice
@@ -47,7 +64,7 @@ namespace suota_pgp
         }
 
         /// <summary>
-        /// 
+        /// Selected firmware file name.
         /// </summary>
         private string _selectedFileName;
         public string SelectedFileName
@@ -63,10 +80,10 @@ namespace suota_pgp
         }
 
         /// <summary>
-        /// 
+        /// Application State.
         /// </summary>
-        private State _state;
-        public State State
+        private AppState _state;
+        public AppState State
         {
             get => _state;
             private set
@@ -81,35 +98,38 @@ namespace suota_pgp
         }
 
         /// <summary>
-        /// 
+        /// Error message to display
         /// </summary>
-        private bool _firmwareIsLoaded;
-        public bool FirmwareIsLoaded
+        private string _errorMessage;
+        public string ErrorMessage
         {
-            get => _firmwareIsLoaded;
-            set
-            {
-                if (SetProperty(ref _firmwareIsLoaded, value))
-                {
-                    BeginSuotaCommand.RaiseCanExecuteChanged();
-                }
-            }
+            get => _errorMessage;
+            private set => SetProperty(ref _errorMessage, value);
         }
 
+        /// <summary>
+        /// Command to Begin SUOTA.
+        /// </summary>
         public DelegateCommand BeginSuotaCommand { get; private set; }
 
+        /// <summary>
+        /// Command to retrieve bonded GO+ devices.
+        /// </summary>
         public DelegateCommand GetPairedPgpCommand { get; private set; }
 
+        /// <summary>
+        /// Command to refresh the list of firmware files.
+        /// </summary>
         public DelegateCommand RefreshFilesCommand { get; private set; }
 
         /// <summary>
-        /// 
+        /// Initialize a new instance of 'ConnectViewModel'
         /// </summary>
-        /// <param name="aggregator"></param>
-        /// <param name="bleManager"></param>
-        /// <param name="fileManager"></param>
-        /// <param name="navService"></param>
-        /// <param name="suotaManager"></param>
+        /// <param name="aggregator">Prism dependency injected 'IEventAggregator'</param>
+        /// <param name="bleManager">Prism dependency injected 'IBleManager'</param>
+        /// <param name="fileManager">Prism dependency injected 'IFileManager'</param>
+        /// <param name="navService">Prism dependency injected 'INavigationService'</param>
+        /// <param name="suotaManager">Prism dependency injected 'ISuotaManager'</param>
         public ConnectViewModel(IEventAggregator aggregator,
                                 IBleManager bleManager,
                                 IFileManager fileManager,
@@ -121,37 +141,38 @@ namespace suota_pgp
             _fileManager = fileManager;
             _suotaManager = suotaManager;
             _navigationService = navService;
-
-            Devices = new ObservableCollection<GoPlus>();
             
-            Files = new ObservableCollection<string>();
+            Devices = new ObservableCollection<GoPlus>();            
+            FileNames = new ObservableCollection<string>();
 
             BeginSuotaCommand = new DelegateCommand(BeginSuota, CanBeginSuota);
             GetPairedPgpCommand = new DelegateCommand(GetPairedPgp, CanGetPairedPgp);
             RefreshFilesCommand = new DelegateCommand(RefreshFirmwares, CanRefreshFirmwares);
+
+            _aggregator.GetEvent<PrismEvents.AppStateChangedEvent>().Subscribe(OnAppStateChanged, ThreadOption.UIThread);
+            _aggregator.GetEvent<PrismEvents.ErrorStateChangedEvent>().Subscribe(OnErrorStateChanged, ThreadOption.UIThread);
         }
 
         /// <summary>
-        /// 
+        /// Retrieve bonded GO+ devices.
         /// </summary>
         private void GetPairedPgp()
         {
-            SelectedDevice = null;
             Devices.Clear();
-            var pgpList = _bleManager.GetBondedDevices();
-            foreach (var pgp in pgpList)
+            SelectedDevice = null;
+
+            List<GoPlus> pgpList = _bleManager.GetBondedDevices();
+            foreach (GoPlus pgp in pgpList)
             {
                 Devices.Add(pgp);
             }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
         private bool CanGetPairedPgp()
         {
-            return State == State.Idle;
+            return State == AppState.Idle &&
+                   !ErrorState.HasFlag(ErrorState.BluetoothDisabled) &&
+                   !ErrorState.HasFlag(ErrorState.LocationUnauthorized);
         }
 
         /// <summary>
@@ -159,34 +180,32 @@ namespace suota_pgp
         /// </summary>
         private async void RefreshFirmwares()
         {
+            FileNames.Clear();
             SelectedFileName = null;
-            Files.Clear();
 
-            State = State.Loading;
-            var wareFiles = await _fileManager.GetFirmwareFileNames();
+            _aggregator.GetEvent<PrismEvents.AppStateChangedEvent>().Publish(AppState.Loading);
 
-            if (wareFiles != null)
+            var files = await _fileManager.GetFirmwareFileNames();
+
+            if (files != null)
             {
-                foreach (var wareFile in wareFiles)
+                foreach (string fileName in files)
                 {
-                    Files.Add(wareFile);
+                    FileNames.Add(fileName);
                 }
             }
 
-            State = State.Idle;
+            _aggregator.GetEvent<PrismEvents.AppStateChangedEvent>().Publish(AppState.Idle);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
         private bool CanRefreshFirmwares()
         {
-            return State == State.Idle;
+            return State == AppState.Idle &&
+                   !ErrorState.HasFlag(ErrorState.StorageUnauthorized);
         }
 
         /// <summary>
-        /// 
+        /// Begin Software Update Over The Air (SUOTA).
         /// </summary>
         private void BeginSuota()
         {
@@ -200,34 +219,38 @@ namespace suota_pgp
             _navigationService.NavigateAsync("SuotaView");
         }
         
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
         private bool CanBeginSuota()
         {
-            return (State == State.Idle) &&
+            return (State == AppState.Idle) &&
+                   (ErrorState == ErrorState.None) &&
                    (SelectedDevice != null) &&
                    (SelectedFileName != null);
         }
 
+        /// <summary>
+        /// Clear devices and file names.
+        /// </summary>
+        private void Clear()
+        {
+            Devices.Clear();
+            FileNames.Clear();
+            SelectedDevice = null;
+            SelectedFileName = null;
+        }
+
         #region Events
 
-        public void OnFileLoaded()
+        private void OnAppStateChanged(AppState state)
         {
-            FirmwareIsLoaded = true;
+            State = state;
         }
 
-        public void OnScanStateChanged(ScanState state)
+        private void OnErrorStateChanged(ErrorState state)
         {
-            State = (state == ScanState.Running) ? State.Scanning : State.Idle;
-        }
-
-        public void OnGoPlusFound(GoPlus pgp)
-        {
-            if (pgp != null)
+            ErrorState = state;
+            if (ErrorState != ErrorState.None)
             {
-                Devices.Add(pgp);
+                Clear();
             }
         }
 
@@ -235,15 +258,26 @@ namespace suota_pgp
 
         #region Navigation
 
-        public override void OnNavigatedFrom(INavigationParameters parameters) { }
-
         public override void OnNavigatedTo(INavigationParameters parameters)
         {
-            //GetPairedPgp();
-            //RefreshFirmwares();
-        }
+            try
+            {
+                //if (State == AppState.Idle)
+                //{
+                //    GetPairedPgp();
+                //}
+            }
+            catch { }
 
-        public override void OnNavigatingTo(INavigationParameters parameters) { }
+            try
+            {
+                //if (State == AppState.Idle)
+                //{
+                //    RefreshFirmwares();
+                //}
+            }
+            catch { }
+        }
 
         #endregion
     }
