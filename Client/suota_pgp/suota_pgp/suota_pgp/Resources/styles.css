@@ -1,13 +1,15 @@
 
 ^label {
-    color: #000000;
+    color: black;
     font-size: small;
 }
 
 #listViewLabel {
-    color: #000000;
+    color: black;
     font-size: small;
 }
 
-^listView {
+#errorLabel {
+    color: red;
+    font-size: medium;
 }

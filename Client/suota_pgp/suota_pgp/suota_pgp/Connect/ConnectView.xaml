@@ -30,24 +30,25 @@
                 <RowDefinition />
                 <RowDefinition Height="auto"/>
             </Grid.RowDefinitions>
-            <Grid Grid.Row="0"
-                  Grid.Column="0"
-                  Grid.ColumnSpan="2"
-                  BackgroundColor="Red">
-                <Label FontSize="Medium"
-                       HorizontalOptions="Center"
-                       VerticalOptions="Center"
-                       Text="{Binding ErrorState, 
-                              Converter={StaticResource es2s}}"
-                       TextColor="White"/>
-            </Grid>
+            <Label x:Name="errorLabel"
+                   Grid.Row="0"
+                   Grid.Column="0"
+                   Grid.ColumnSpan="2"
+                   HorizontalOptions="Center"
+                   HorizontalTextAlignment="Center"
+                   Text="{Binding ErrorState,
+                         Converter={StaticResource es2s}}"
+                   Margin="10"/>
+
             <Label Grid.Row="1"
                    Grid.Column="0"
                    Grid.ColumnSpan="2"
                    Text="Paired Pokemon GO Plus"
                    HorizontalOptions="Center"
+                   HorizontalTextAlignment="Center"
                    Margin="10"
                    FontSize="Medium"/>
+            
             <Button Grid.Row="2"
                     Grid.Column="0"
                     Grid.ColumnSpan="2"
@@ -80,6 +81,7 @@
                    HorizontalOptions="Center"
                    Margin="10"
                    FontSize="Medium"/>
+            
             <Button Grid.Row="5"
                     Grid.Column="0"
                     Grid.ColumnSpan="2"

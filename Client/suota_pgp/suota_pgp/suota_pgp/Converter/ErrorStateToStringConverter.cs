@@ -16,19 +16,19 @@ namespace suota_pgp
                 if (state.HasFlag(ErrorState.LocationUnauthorized) &&
                     state.HasFlag(ErrorState.StorageUnauthorized))
                 {
-                    return "Please enable location and storage permissions.";
+                    return "⚠️ Please enable location and storage permissions.";
                 }
                 else if (state.HasFlag(ErrorState.StorageUnauthorized))
                 {
-                    return "Please enable storage permissions";
+                    return "⚠️ Please enable storage permissions";
                 }
                 else if (state.HasFlag(ErrorState.LocationUnauthorized))
                 {
-                    return "Please enable location permissions.";
+                    return "⚠️ Please enable location permissions.";
                 }
                 else if (state.HasFlag(ErrorState.BluetoothDisabled))
                 {
-                    return "Bluetooth adapter is disabled.";
+                    return "⚠️ Bluetooth adapter is disabled.";
                 }
 
                 return string.Empty;
