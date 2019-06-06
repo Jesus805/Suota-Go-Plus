@@ -53,7 +53,7 @@ namespace suota_pgp.Model
         /// <summary>
         /// Restore Go+ to it's original firmware - WRITE
         /// </summary>
-        public static readonly Guid RestoreCharacteristicUuid = Guid.Parse("d216f679-4c8c-42f6-8206-a7150a0ec0fd");
+        public static readonly Guid RestoreCharacteristicUuid = Guid.Parse("6b64be6f-5467-d8b5-7143-1716be1b96be");
 
         public static readonly byte[] SuotaAdvertisementUuid = { 0xFE, 0xF5 };
         /// <summary>
@@ -102,7 +102,9 @@ namespace suota_pgp.Model
             { KeyCharacteristicUuid, ExtractorServiceUuid },
             { BlobCharacteristicUuid, ExtractorServiceUuid },
             { RestoreCharacteristicUuid, ExtractorServiceUuid },
+
             { GoPlusUpdateRequestUuid, GoPlusServiceUuuid },
+
             { SpotaMemDevUuid, SpotaServiceUuid },
             { SpotaGpioMapUuid, SpotaServiceUuid },
             { SpotaMemInfoUuid, SpotaServiceUuid },

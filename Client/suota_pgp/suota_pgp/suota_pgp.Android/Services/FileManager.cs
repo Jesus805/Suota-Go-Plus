@@ -94,8 +94,10 @@ namespace suota_pgp.Droid.Services
             Patch = new byte[Constants.PatchLength];
             Header = new byte[Constants.HeaderSize];
 
-            // TODO: Probably remove and add when "permissions are enabled"
-            //CreateAppFolder();
+            if (!stateManager.ErrorState.HasFlag(ErrorState.StorageUnauthorized))
+            {
+                CreateAppFolder();
+            }
         }
 
         /// <summary>
@@ -290,7 +292,7 @@ namespace suota_pgp.Droid.Services
 
                 if (fileNames.Count == 0)
                 {
-                    ShowShortToast("No files found. Please make sure the firmware file is in the \'PgpExtractor\' folder.");
+                    ShowShortToast($"No files found. Please make sure the firmware file is in the \'{Resources.appFolderNameString}\' folder.");
                 }
             }
             else
