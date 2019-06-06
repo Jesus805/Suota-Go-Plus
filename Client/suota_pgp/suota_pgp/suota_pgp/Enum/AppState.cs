@@ -15,9 +15,13 @@
         /// </summary>
         Getting,
         /// <summary>
-        /// Loading Firmware file.
+        /// Getting firmware file names.
         /// </summary>
         Loading,
+        /// <summary>
+        /// Restoring original firmware.
+        /// </summary>
+        Restoring,
         /// <summary>
         /// Performing SUOTA.
         /// </summary>

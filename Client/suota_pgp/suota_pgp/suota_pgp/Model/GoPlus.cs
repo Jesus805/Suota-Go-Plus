@@ -14,7 +14,11 @@ namespace suota_pgp.Model
         public string Name
         {
             get => _name;
-            set => SetProperty(ref _name, value);
+            set
+            {
+                SetProperty(ref _name, value);
+                RaisePropertyChanged("IsComplete");
+            }
         }
         /// <summary>
         /// Pokemon GO Plus' Bluetooth Address.
@@ -23,7 +27,11 @@ namespace suota_pgp.Model
         public string BtAddress
         {
             get => _btAddress;
-            set => SetProperty(ref _btAddress, value);
+            set
+            {
+                SetProperty(ref _btAddress, value);
+                RaisePropertyChanged("IsComplete");
+            }
         }
         /// <summary>
         /// 16 byte unique key
@@ -32,7 +40,11 @@ namespace suota_pgp.Model
         public string Key
         {
             get => _key;
-            set => SetProperty(ref _key, value);
+            set
+            {
+                SetProperty(ref _key, value);
+                RaisePropertyChanged("IsComplete");
+            }
         }
         /// <summary>
         /// 256 byte unique blob
@@ -41,15 +53,21 @@ namespace suota_pgp.Model
         public string Blob
         {
             get => _blob;
-            set => SetProperty(ref _blob, value);
+            set
+            {
+                SetProperty(ref _blob, value);
+                RaisePropertyChanged("IsComplete");
+            }
         }
 
-        public GoPlus()
+        public bool IsComplete
         {
-            Name = string.Empty;
-            BtAddress = string.Empty;
-            Key = string.Empty;
-            Blob = string.Empty;
+            get => !string.IsNullOrEmpty(Name) &&
+                   !string.IsNullOrEmpty(BtAddress) &&
+                   !string.IsNullOrEmpty(Key) &&
+                   !string.IsNullOrEmpty(Blob);
         }
+
+        public GoPlus() { }
     }
 }

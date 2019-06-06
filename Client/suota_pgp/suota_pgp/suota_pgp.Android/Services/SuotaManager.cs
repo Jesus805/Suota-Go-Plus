@@ -16,6 +16,7 @@ namespace suota_pgp.Droid.Services
         private IBleManager _bleManager;
         private IFileManager _fileManager;
         private ILoggerFacade _logger;
+        private IStateManager _stateManager;
         private bool _invalidImgBankExpected;
         private GoPlus _suotaDevice;
         private int _progressPercent;
@@ -77,12 +78,14 @@ namespace suota_pgp.Droid.Services
                             IEventAggregator aggregator,
                             IBleManager bleManager,
                             IFileManager fileManager,
-                            ILoggerFacade logger) : base(activity)
+                            ILoggerFacade logger,
+                            IStateManager stateManager) : base(activity)
         {
             _aggregator = aggregator;
             _bleManager = bleManager;
             _fileManager = fileManager;
             _logger = logger;
+            _stateManager = stateManager;
 
             _aggregator.GetEvent<PrismEvents.CharacteristicUpdatedEvent>().Subscribe(OnCharacteristicNotify);
             _aggregator.GetEvent<PrismEvents.GoPlusFoundEvent>().Subscribe(OnGoPlusFound);
@@ -127,14 +130,14 @@ namespace suota_pgp.Droid.Services
                 throw new ArgumentNullException("fileName");
             }
 
-            _aggregator.GetEvent<PrismEvents.AppStateChangedEvent>().Publish(AppState.Suota);
+            _stateManager.State = AppState.Suota;
             _aggregator.GetEvent<PrismEvents.ProgressUpdateEvent>().Publish(new Progress(_progressPercent++, "Loading Firmware"));
             
-            // Load the file into memory and build blocks.
-            _fileManager.LoadFirmware(fileName);
-
             try
             {
+                // Load the file into memory and build blocks.
+                _fileManager.LoadFirmware(fileName);
+
                 _aggregator.GetEvent<PrismEvents.ProgressUpdateEvent>().Publish(new Progress(_progressPercent++, "Connecting to Bonded Go+"));
                 await _bleManager.ConnectDevice(device);
 

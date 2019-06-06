@@ -8,7 +8,7 @@
              Title="Patch Device">
     <ContentPage.Resources>
         <ResourceDictionary>
-            <local:ScanStateToBoolConverter x:Key="ss2b"/>
+            <local:AppStateToBoolConverter x:Key="ss2b"/>
             <local:ErrorStateToGridLengthConverter x:Key="s2gl"/>
             <local:ErrorStateToStringConverter x:Key="es2s"/>
         </ResourceDictionary>

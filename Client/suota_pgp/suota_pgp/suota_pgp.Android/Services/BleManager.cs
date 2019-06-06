@@ -53,13 +53,13 @@ namespace suota_pgp.Droid.Services
             _logger = logger;
             _stateManager = stateManager;
 
-            SetBluetoothState(_ble.State);
+            PublishBluetoothState(_ble.State);
         }
 
         /// <summary>
-        /// Get the 'DeviceInfo' in a single transation.
+        /// Get the GO+ key and blob.
         /// </summary>
-        /// <returns>Async task that returns DeviceInfo.</returns>
+        /// <returns>Async task to await.</returns>
         public async Task GetDeviceInfo(GoPlus device)
         {
             if (device == null)
@@ -72,15 +72,33 @@ namespace suota_pgp.Droid.Services
                 throw new ArgumentException("This device does not exist in discovered devices");
             }
 
-            await ConnectDevice(device);
+            if (_stateManager.State != AppState.Idle)
+                return;
+           
+            try
+            {
+                _stateManager.State = AppState.Getting;
 
-            byte[] key = await ReadCharacteristic(device, Constants.KeyCharacteristicUuid);
-            device.Key = Helper.ByteArrayToString(key);
+                await ConnectDevice(device);
 
-            byte[] blob = await ReadCharacteristic(device, Constants.BlobCharacteristicUuid);
-            device.Blob = Helper.ByteArrayToString(blob);
+                byte[] key = await ReadCharacteristic(device, Constants.KeyCharacteristicUuid);
+                device.Key = Helper.ByteArrayToString(key);
 
-            await DisconnectDevice(device);
+                byte[] blob = await ReadCharacteristic(device, Constants.BlobCharacteristicUuid);
+                device.Blob = Helper.ByteArrayToString(blob);
+
+                await DisconnectDevice(device);
+            }
+            finally
+            {
+                _stateManager.State = AppState.Idle;
+            }
+        }
+
+        public async Task RestoreDevice(GoPlus device)
+        {
+            // TODO: 
+            await Task.Delay(100);
         }
 
         /// <summary>
@@ -126,14 +144,17 @@ namespace suota_pgp.Droid.Services
 
             try
             {
+                if (_stateManager.State != AppState.Idle)
+                    return;
+
                 _logger.Log("Scanning for Go+ Devices.", Category.Info, Priority.None);
-                _aggregator.GetEvent<PrismEvents.ScanStateChangedEvent>().Publish(ScanState.Running);
+                _stateManager.State = AppState.Scanning;
                 await _adapter.StartScanningForDevicesAsync();
             }
             catch (Exception e)
             {
                 _logger.Log($"Unable to scan for GO+ Devices. Reason: {e.Message}", Category.Info, Priority.None);
-                _aggregator.GetEvent<PrismEvents.ScanStateChangedEvent>().Publish(ScanState.Stopped);
+                _stateManager.State = AppState.Idle;
             }
         }
 
@@ -142,9 +163,13 @@ namespace suota_pgp.Droid.Services
         /// </summary>
         public async void StopScan()
         {
+            if (_stateManager.State != AppState.Scanning)
+                return;
+
             _logger.Log("Stopping scan for GO+ Devices", Category.Info, Priority.None);
             await _adapter.StopScanningForDevicesAsync();
-            _aggregator.GetEvent<PrismEvents.ScanStateChangedEvent>().Publish(ScanState.Stopped);
+
+            _stateManager.State = AppState.Idle;
         }
 
         /// <summary>
@@ -548,7 +573,11 @@ namespace suota_pgp.Droid.Services
             await characteristic.StopUpdatesAsync();
         }
 
-        private void SetBluetoothState(BluetoothState state)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="state"></param>
+        private void PublishBluetoothState(BluetoothState state)
         {
             _aggregator.GetEvent<ManagerEvents.BluetoothStateChangedEvent>().Publish(state);
         }
@@ -616,7 +645,7 @@ namespace suota_pgp.Droid.Services
         private void _adapter_ScanTimeoutElapsed(object sender, EventArgs e)
         {
             _logger.Log($"Scanning timeout elapsed.", Category.Info, Priority.None);
-            _aggregator.GetEvent<PrismEvents.ScanStateChangedEvent>().Publish(ScanState.Stopped);
+            _stateManager.State = AppState.Idle;
         }
 
         private void _adapter_DeviceConnected(object sender, Plugin.BLE.Abstractions.EventArgs.DeviceEventArgs e)
@@ -634,14 +663,9 @@ namespace suota_pgp.Droid.Services
             _logger.Log($"Connection lost from {e.Device.Name}", Category.Info, Priority.None);
         }
 
-        public object GetBleState()
-        {
-            return _ble.State;
-        }
-
         private void _ble_StateChanged(object sender, Plugin.BLE.Abstractions.EventArgs.BluetoothStateChangedArgs e)
         {
-            SetBluetoothState(e.NewState);
+            PublishBluetoothState(e.NewState);
         }
 
         #endregion

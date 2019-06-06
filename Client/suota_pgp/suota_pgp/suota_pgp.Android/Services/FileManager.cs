@@ -16,6 +16,7 @@ namespace suota_pgp.Droid.Services
     internal class FileManager : BaseManager, IFileManager
     {
         private IEventAggregator _aggregator;
+        private IStateManager _stateManager;
         private readonly ILoggerFacade _logger;
         /// <summary>
         /// Firmware search directory.
@@ -81,10 +82,12 @@ namespace suota_pgp.Droid.Services
         /// <param name="logger">Prism Dependency Injected ILoggerFacade.</param>
         public FileManager(ICurrentActivity activity,
                            IEventAggregator aggregator,
-                           ILoggerFacade logger) : base(activity)
+                           ILoggerFacade logger,
+                           IStateManager stateManager) : base(activity)
         {
             _aggregator = aggregator;
             _logger = logger;
+            _stateManager = stateManager;
             _path = Android.OS.Environment.ExternalStorageDirectory.AbsolutePath + "/" +
                     Resources.appFolderNameString;
 
@@ -258,6 +261,11 @@ namespace suota_pgp.Droid.Services
         /// <returns>A list of firmware names</returns>
         public async Task<List<string>> GetFirmwareFileNames()
         {
+            if (_stateManager.State != AppState.Idle)
+                return null;
+
+            _stateManager.State = AppState.Loading;
+
             _logger.Log("Attempting to get firmware File names", Category.Info, Priority.None);
 
             List<string> fileNames = new List<string>();
@@ -289,6 +297,8 @@ namespace suota_pgp.Droid.Services
             {
                 ShowShortToast("Storage inaccessible. Please make sure that storage permissions are enabled.");
             }
+
+            _stateManager.State = AppState.Idle;
 
             return fileNames;
         }

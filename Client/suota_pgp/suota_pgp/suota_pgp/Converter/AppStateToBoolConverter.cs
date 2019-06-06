@@ -4,7 +4,7 @@ using Xamarin.Forms;
 
 namespace suota_pgp
 {
-    public class ScanStateToBoolConverter : IValueConverter
+    public class AppStateToBoolConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {

@@ -8,7 +8,7 @@
              Title="Key Extractor">
     <ContentPage.Resources>
         <ResourceDictionary>
-            <local:ScanStateToBoolConverter x:Key="ss2b"/>
+            <local:AppStateToBoolConverter x:Key="ss2b"/>
             <local:ErrorStateToGridLengthConverter x:Key="s2gl"/>
             <local:ErrorStateToStringConverter x:Key="es2s"/>
         </ResourceDictionary>
@@ -53,7 +53,7 @@
                     Margin="10"
                     Text="Scan"
                     Command="{Binding ScanCommand}"
-                    IsVisible="{Binding State,
+                    IsVisible="{Binding AppState,
                                         Converter={StaticResource ss2b},
                                         ConverterParameter='inverse'}"
                     HorizontalOptions="Center"/>
@@ -64,7 +64,7 @@
                     Margin="10"
                     Text="Stop Scanning"
                     Command="{Binding StopScanCommand}"
-                    IsVisible="{Binding State, 
+                    IsVisible="{Binding AppState, 
                                         Converter={StaticResource ss2b}}"
                     HorizontalOptions="Center"/>
 

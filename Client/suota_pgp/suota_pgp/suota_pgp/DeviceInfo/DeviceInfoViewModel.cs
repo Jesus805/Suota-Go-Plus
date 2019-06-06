@@ -1,6 +1,5 @@
 ﻿using Prism.Commands;
 using Prism.Events;
-using Prism.Navigation;
 using suota_pgp.Model;
 using suota_pgp.Services;
 using System.Collections.ObjectModel;
@@ -12,10 +11,23 @@ namespace suota_pgp
         private IEventAggregator _aggregator;
         private IBleManager _bleManager;
         private IFileManager _fileService;
-        /// <summary>
-        /// Used to ignore 
-        /// </summary>
-        private bool _isExtracting;
+
+        private AppState _appState;
+        public AppState AppState
+        {
+            get => _appState;
+            private set
+            {
+                if (SetProperty(ref _appState, value))
+                {
+                    GetDeviceInfoCommand.RaiseCanExecuteChanged();
+                    RestoreCommand.RaiseCanExecuteChanged();
+                    SaveCommand.RaiseCanExecuteChanged();
+                    ScanCommand.RaiseCanExecuteChanged();
+                    StopScanCommand.RaiseCanExecuteChanged();
+                }
+            }
+        }
 
         private ErrorState _errorState;
         public ErrorState ErrorState
@@ -50,23 +62,6 @@ namespace suota_pgp
             }
         }
 
-        private AppState _state;
-        public AppState State
-        {
-            get => _state;
-            private set
-            {
-                if (SetProperty(ref _state, value))
-                {
-                    GetDeviceInfoCommand.RaiseCanExecuteChanged();
-                    RestoreCommand.RaiseCanExecuteChanged();
-                    SaveCommand.RaiseCanExecuteChanged();
-                    ScanCommand.RaiseCanExecuteChanged();
-                    StopScanCommand.RaiseCanExecuteChanged();
-                }
-            }
-        }
-
         public DelegateCommand GetDeviceInfoCommand { get; private set; }
 
         public DelegateCommand SaveCommand { get; private set; }
@@ -79,12 +74,12 @@ namespace suota_pgp
 
         public DeviceInfoViewModel(IEventAggregator aggregator,
                                    IBleManager bleService, 
-                                   IFileManager fileService)
+                                   IFileManager fileService,
+                                   IStateManager stateManager)
         {
             _aggregator = aggregator;
             _bleManager = bleService;
             _fileService = fileService;
-            _isExtracting = false;
 
             Devices = new ObservableCollection<GoPlus>();
 
@@ -94,26 +89,29 @@ namespace suota_pgp
             ScanCommand = new DelegateCommand(Scan, ScanCanExecute);
             StopScanCommand = new DelegateCommand(StopScan, StopScanCanExecute);
 
-            _aggregator.GetEvent<PrismEvents.ScanStateChangedEvent>().Subscribe(OnScanStateChanged, ThreadOption.UIThread);
+            AppState = stateManager.State;
+            ErrorState = stateManager.ErrorState;
+
+            _aggregator.GetEvent<PrismEvents.AppStateChangedEvent>().Subscribe(OnAppStateChanged, ThreadOption.UIThread);
             _aggregator.GetEvent<PrismEvents.GoPlusFoundEvent>().Subscribe(OnGoPlusFound, ThreadOption.UIThread);
             _aggregator.GetEvent<PrismEvents.ErrorStateChangedEvent>().Subscribe(OnErrorStateChanged, ThreadOption.UIThread);
         }
 
+        protected void Clear()
+        {
+            SelectedDevice = null;
+            Devices.Clear();
+        }
+
         private async void GetDeviceInfo()
         {
-            if (SelectedDevice == null)
-            {
-                return;
-            }
-
-            StopScan();
             await _bleManager.GetDeviceInfo(SelectedDevice);
             SaveCommand.RaiseCanExecuteChanged();
         }
 
         private bool GetDeviceInfoCanExecute()
         {
-            return State == AppState.Idle && 
+            return AppState == AppState.Idle && 
                    !ErrorState.HasFlag(ErrorState.BluetoothDisabled) &&
                    !ErrorState.HasFlag(ErrorState.LocationUnauthorized) &&
                    SelectedDevice != null;
@@ -126,49 +124,45 @@ namespace suota_pgp
 
         private bool SaveCanExecute()
         {
-            return State == AppState.Idle &&
+            return AppState == AppState.Idle &&
                    !ErrorState.HasFlag(ErrorState.StorageUnauthorized) &&
-                   SelectedDevice != null;
+                   SelectedDevice != null &&
+                   SelectedDevice.IsComplete;
         }
 
         private void Scan()
         {
-            SelectedDevice = null;
-            _isExtracting = true;
-            Devices.Clear();
+            Clear();
             _bleManager.Scan();
         }
 
         private bool ScanCanExecute()
         {
-            return State == AppState.Idle && 
+            return AppState == AppState.Idle &&
                    !ErrorState.HasFlag(ErrorState.BluetoothDisabled) &&
                    !ErrorState.HasFlag(ErrorState.LocationUnauthorized);
         }
 
         private void StopScan()
         {
-            if (State == AppState.Scanning)
-            {
-                _bleManager.StopScan();
-            }
+            _bleManager.StopScan();
         }
 
         private bool StopScanCanExecute()
         {
-            return State == AppState.Scanning &&
+            return AppState == AppState.Scanning &&
                    !ErrorState.HasFlag(ErrorState.BluetoothDisabled) &&
                    !ErrorState.HasFlag(ErrorState.LocationUnauthorized);
         }
 
         private void Restore()
         {
-
+            _bleManager.RestoreDevice(SelectedDevice);
         }
 
         private bool RestoreCanExecute()
         {
-            return State == AppState.Idle &&
+            return AppState == AppState.Idle &&
                    !ErrorState.HasFlag(ErrorState.BluetoothDisabled) &&
                    !ErrorState.HasFlag(ErrorState.LocationUnauthorized) &&
                    SelectedDevice != null;
@@ -176,16 +170,9 @@ namespace suota_pgp
 
         #region Events
 
-        private void OnScanStateChanged(ScanState state)
+        private void OnAppStateChanged(AppState state)
         {
-            if (_isExtracting)
-            {
-                State = (state == ScanState.Running) ? AppState.Scanning : AppState.Idle;
-                if (State == AppState.Idle)
-                {
-                    _isExtracting = false;
-                }
-            }
+            AppState = state;
         }
 
         private void OnErrorStateChanged(ErrorState state)
@@ -195,7 +182,7 @@ namespace suota_pgp
 
         private void OnGoPlusFound(GoPlus pgp)
         {
-            if (_isExtracting && pgp != null)
+            if (_isViewActive && pgp != null)
             {
                 Devices.Add(pgp);
             }

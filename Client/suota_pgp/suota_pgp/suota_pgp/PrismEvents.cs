@@ -18,7 +18,5 @@ namespace suota_pgp
         public class PermissionStateChangedEvent : PubSubEvent<PermissionState> { }
 
         public class ProgressUpdateEvent : PubSubEvent<Progress> { }
-
-        public class ScanStateChangedEvent : PubSubEvent<ScanState> { }
     }
 }
