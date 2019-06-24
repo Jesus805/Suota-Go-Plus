@@ -3,6 +3,7 @@ using Android.Content.PM;
 using Android.OS;
 using Android.Runtime;
 using Android.Widget;
+using Plugin.BLE;
 using Plugin.CurrentActivity;
 using Plugin.Permissions;
 using Plugin.Permissions.Abstractions;
@@ -116,11 +117,14 @@ namespace suota_pgp.Droid
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
+            containerRegistry.RegisterInstance(CrossCurrentActivity.Current);
+            containerRegistry.RegisterInstance(CrossBluetoothLE.Current);
             containerRegistry.RegisterSingleton<IBleManager, BleManager>();
+            containerRegistry.RegisterSingleton<IExtractorManager, ExtractorManager>();
             containerRegistry.RegisterSingleton<IFileManager, FileManager>();
+            containerRegistry.RegisterSingleton<INotifyManager, NotifyManager>();
             containerRegistry.RegisterSingleton<ISuotaManager, SuotaManager>();
             containerRegistry.RegisterSingleton<IStateManager, StateManager>();
-            containerRegistry.RegisterInstance(CrossCurrentActivity.Current);
         }
     }
 }

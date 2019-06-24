@@ -1,7 +1,7 @@
-﻿using Plugin.CurrentActivity;
-using Plugin.Permissions;
+﻿using Plugin.Permissions;
 using Prism.Events;
 using Prism.Logging;
+using Prism.Mvvm;
 using suota_pgp.Model;
 using suota_pgp.Services;
 using System;
@@ -10,13 +10,15 @@ using System.Threading.Tasks;
 
 namespace suota_pgp.Droid.Services
 {
-    internal class SuotaManager : BaseManager, ISuotaManager
+    internal class SuotaManager : BindableBase, ISuotaManager
     {
-        private IEventAggregator _aggregator;
         private IBleManager _bleManager;
+        private IEventAggregator _aggregator;
         private IFileManager _fileManager;
         private ILoggerFacade _logger;
+        private INotifyManager _notifyManager;
         private IStateManager _stateManager;
+
         private bool _invalidImgBankExpected;
         private GoPlus _suotaDevice;
         private int _progressPercent;
@@ -36,7 +38,7 @@ namespace suota_pgp.Droid.Services
             {
                 lock (propLock)
                 {
-                    _isSuotaActive = true;
+                    _isSuotaActive = value;
                 }
             }
         }
@@ -74,17 +76,18 @@ namespace suota_pgp.Droid.Services
         /// <param name="bleManager">Prism dependency injected 'IBleManager'</param>
         /// <param name="fileManager">Prism dependency injected 'IFileManager'</param>
         /// <param name="logger">Prism dependency injected 'ILoggerFacade'</param>
-        public SuotaManager(ICurrentActivity activity,
-                            IEventAggregator aggregator,
+        public SuotaManager(IEventAggregator aggregator,
                             IBleManager bleManager,
                             IFileManager fileManager,
                             ILoggerFacade logger,
-                            IStateManager stateManager) : base(activity)
+                            INotifyManager notifyManager,
+                            IStateManager stateManager)
         {
             _aggregator = aggregator;
             _bleManager = bleManager;
             _fileManager = fileManager;
             _logger = logger;
+            _notifyManager = notifyManager;
             _stateManager = stateManager;
 
             _aggregator.GetEvent<PrismEvents.CharacteristicUpdatedEvent>().Subscribe(OnCharacteristicNotify);
@@ -104,17 +107,17 @@ namespace suota_pgp.Droid.Services
             if (locationStatus != Plugin.Permissions.Abstractions.PermissionStatus.Granted &&
                 storageStatus != Plugin.Permissions.Abstractions.PermissionStatus.Granted)
             {
-                ShowDialogErrorBox("Location and Storage Permissions are required to use SUOTA.");
+                _notifyManager.ShowDialogErrorBox("Location and Storage Permissions are required to use SUOTA.");
                 return;
             }
             else if (locationStatus != Plugin.Permissions.Abstractions.PermissionStatus.Granted)
             {
-                ShowDialogErrorBox("Location Permissions are required to use SUOTA.");
+                _notifyManager.ShowDialogErrorBox("Location Permissions are required to use SUOTA.");
                 return;
             }
             else if (storageStatus != Plugin.Permissions.Abstractions.PermissionStatus.Granted)
             {
-                ShowDialogErrorBox("Storage Permissions are required to use SUOTA.");
+                _notifyManager.ShowDialogErrorBox("Storage Permissions are required to use SUOTA.");
                 return;
             }
 
@@ -297,7 +300,7 @@ namespace suota_pgp.Droid.Services
         }
 
         /// <summary>
-        /// Write CRC
+        /// Write CRC.
         /// </summary>
         private async Task WriteCrc()
         {
@@ -479,17 +482,17 @@ namespace suota_pgp.Droid.Services
                         _bleManager.DisconnectDevice(_suotaDevice);
                         _bleManager.RemoveBond(_suotaDevice);
                         _aggregator.GetEvent<PrismEvents.ProgressUpdateEvent>().Publish(new Progress(100, "Finished", true));
-                        ShowDialogInfoBox("Update Complete. Please restart your Pokemon GO Plus if it doesn't show up");
+                        _notifyManager.ShowDialogInfoBox("Update Complete. Please restart your Pokemon GO Plus if it doesn't show up");
                         ResetState();
                         break;
                     case SpotarStatusUpdate.PatchLengthError:
                         _logger.Log("Patch Length Error", Category.Exception, Priority.High);
-                        ShowDialogErrorBox("Critical Error! Please see the log for details.");
+                        _notifyManager.ShowDialogErrorBox("Critical Error! Please see the log for details.");
                         CancelSuota();
                         break;
                     case SpotarStatusUpdate.IntMemError:
                         _logger.Log("Internal Memory Error (Not enough space for Patch)", Category.Exception, Priority.High);
-                        ShowDialogErrorBox("Critical Error! Please see the log for details.");
+                        _notifyManager.ShowDialogErrorBox("Critical Error! Please see the log for details.");
                         CancelSuota();
                         break;
                     default:
@@ -506,7 +509,7 @@ namespace suota_pgp.Droid.Services
         private void OnGoPlusFound(GoPlus device)
         {
             // Ignore if not performing SUOTA or if a device was already found
-            if (!_isSuotaActive)
+            if (!IsSuotaActive)
                 return;
 
             if (device == null)

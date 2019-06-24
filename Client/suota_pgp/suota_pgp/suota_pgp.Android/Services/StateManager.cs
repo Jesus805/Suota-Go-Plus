@@ -1,11 +1,11 @@
 ﻿using Plugin.BLE.Abstractions.Contracts;
-using Plugin.CurrentActivity;
 using Prism.Events;
+using Prism.Mvvm;
 using suota_pgp.Model;
 
 namespace suota_pgp.Droid.Services
 {
-    internal class StateManager : BaseManager, IStateManager
+    internal class StateManager : BindableBase, IStateManager
     {
         private IEventAggregator _aggregator;
 
@@ -35,8 +35,7 @@ namespace suota_pgp.Droid.Services
             }
         }
 
-        public StateManager(ICurrentActivity activity,
-                            IEventAggregator aggregator) : base(activity)
+        public StateManager(IEventAggregator aggregator)
         {
             _aggregator = aggregator;
             _aggregator.GetEvent<ManagerEvents.BluetoothStateChangedEvent>().Subscribe(OnBluetoothStateChanged, ThreadOption.UIThread);

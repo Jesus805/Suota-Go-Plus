@@ -8,7 +8,6 @@ using suota_pgp.Model;
 using suota_pgp.Services;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace suota_pgp.Droid.Services
@@ -17,12 +16,13 @@ namespace suota_pgp.Droid.Services
     /// Bluetooth Low Energy Manager.
     /// Used to communicate with a Go+.
     /// </summary>
-    internal class BleManager : BaseManager, IBleManager
+    internal class BleManager : IBleManager
     {
+        private IAdapter _adapter;
+        private IBluetoothLE _ble;
         private IEventAggregator _aggregator;
         private ILoggerFacade _logger;
-        private IBluetoothLE _ble;
-        private IAdapter _adapter;
+        private INotifyManager _notifyManager;
         private IStateManager _stateManager;
         private Dictionary<Guid, ICharacteristic> _charCache;
         private Dictionary<GoPlus, IDevice> _devicesFound;
@@ -32,16 +32,17 @@ namespace suota_pgp.Droid.Services
         /// Initialize a new instance of 'BleManager'.
         /// </summary>
         /// <param name="aggregator">Prism dependency injected IEventAggregator.</param>
-        public BleManager(ICurrentActivity activity,
+        public BleManager(IBluetoothLE ble,
                           IEventAggregator aggregator,
+                          INotifyManager notifyManager,
                           ILoggerFacade logger,
-                          IStateManager stateManager) : base(activity)
+                          IStateManager stateManager)
         {
             _aggregator = aggregator;
             _charCache = new Dictionary<Guid, ICharacteristic>();
             _devicesFound = new Dictionary<GoPlus, IDevice>();
             _registeredNotifyChar = new List<ICharacteristic>();
-            _ble = CrossBluetoothLE.Current;
+            _ble = ble;
             _ble.StateChanged += _ble_StateChanged;
             _adapter = _ble.Adapter;
             _adapter.ScanMode = ScanMode.Balanced;
@@ -51,54 +52,10 @@ namespace suota_pgp.Droid.Services
             _adapter.DeviceDiscovered += _adapter_DeviceDiscovered;
             _adapter.ScanTimeoutElapsed += _adapter_ScanTimeoutElapsed;
             _logger = logger;
+            _notifyManager = notifyManager;
             _stateManager = stateManager;
 
             PublishBluetoothState(_ble.State);
-        }
-
-        /// <summary>
-        /// Get the GO+ key and blob.
-        /// </summary>
-        /// <returns>Async task to await.</returns>
-        public async Task GetDeviceInfo(GoPlus device)
-        {
-            if (device == null)
-            {
-                throw new ArgumentNullException("device");
-            }
-
-            if (!_devicesFound.ContainsKey(device))
-            {
-                throw new ArgumentException("This device does not exist in discovered devices");
-            }
-
-            if (_stateManager.State != AppState.Idle)
-                return;
-           
-            try
-            {
-                _stateManager.State = AppState.Getting;
-
-                await ConnectDevice(device);
-
-                byte[] key = await ReadCharacteristic(device, Constants.KeyCharacteristicUuid);
-                device.Key = Helper.ByteArrayToString(key);
-
-                byte[] blob = await ReadCharacteristic(device, Constants.BlobCharacteristicUuid);
-                device.Blob = Helper.ByteArrayToString(blob);
-
-                await DisconnectDevice(device);
-            }
-            finally
-            {
-                _stateManager.State = AppState.Idle;
-            }
-        }
-
-        public async Task RestoreDevice(GoPlus device)
-        {
-            // TODO: 
-            await Task.Delay(100);
         }
 
         /// <summary>
@@ -129,7 +86,7 @@ namespace suota_pgp.Droid.Services
 
             if (pgpList.Count == 0)
             {
-                ShowShortToast("No paired Pokemon GO Plus found. Please make sure it's connected via Pokemon GO.");
+                _notifyManager.ShowShortToast("No paired Pokemon GO Plus found. Please make sure it's connected via Pokemon GO.");
             }
 
             return pgpList;
@@ -144,7 +101,8 @@ namespace suota_pgp.Droid.Services
 
             try
             {
-                if (_stateManager.State != AppState.Idle)
+                if (_stateManager.State != AppState.Idle && 
+                    _stateManager.State != AppState.Suota)
                     return;
 
                 _logger.Log("Scanning for Go+ Devices.", Category.Info, Priority.None);
@@ -241,7 +199,7 @@ namespace suota_pgp.Droid.Services
                     else
                     {
                         _logger.Log($"Error connecting to Pokemon GO Plus: {e.Message}.", Category.Exception, Priority.High);
-                        ShowShortToast("Unable to connect to Pokemon GO Plus.");
+                        _notifyManager.ShowShortToast("Unable to connect to Pokemon GO Plus.");
                     }
                 }
             }

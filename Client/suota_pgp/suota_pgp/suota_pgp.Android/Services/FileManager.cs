@@ -2,6 +2,7 @@
 using Plugin.CurrentActivity;
 using Prism.Events;
 using Prism.Logging;
+using Prism.Mvvm;
 using suota_pgp.Droid.Properties;
 using suota_pgp.Model;
 using suota_pgp.Services;
@@ -9,15 +10,16 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using Xamarin.Forms;
 
 namespace suota_pgp.Droid.Services
 {
-    internal class FileManager : BaseManager, IFileManager
+    internal class FileManager : BindableBase, IFileManager
     {
         private IEventAggregator _aggregator;
+        private ILoggerFacade _logger;
+        private INotifyManager _notifyManager;
         private IStateManager _stateManager;
-        private readonly ILoggerFacade _logger;
+
         /// <summary>
         /// Firmware search directory.
         /// </summary>
@@ -57,7 +59,10 @@ namespace suota_pgp.Droid.Services
             get => _patch;
             private set => SetProperty(ref _patch, value);
         }
-
+        
+        /// <summary>
+        /// Header
+        /// </summary>
         private byte[] _header;
         public byte[] Header
         {
@@ -80,13 +85,14 @@ namespace suota_pgp.Droid.Services
         /// </summary>
         /// <param name="aggregator">Prism Dependency Injected IEventAggregator.</param>
         /// <param name="logger">Prism Dependency Injected ILoggerFacade.</param>
-        public FileManager(ICurrentActivity activity,
-                           IEventAggregator aggregator,
+        public FileManager(IEventAggregator aggregator,
                            ILoggerFacade logger,
-                           IStateManager stateManager) : base(activity)
+                           INotifyManager notifyManager,
+                           IStateManager stateManager)
         {
             _aggregator = aggregator;
             _logger = logger;
+            _notifyManager = notifyManager;
             _stateManager = stateManager;
             _path = Android.OS.Environment.ExternalStorageDirectory.AbsolutePath + "/" +
                     Resources.appFolderNameString;
@@ -222,6 +228,10 @@ namespace suota_pgp.Droid.Services
             return chunks;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public List<byte[]> GetHeaderChunks()
         {
             int blockSize = Constants.HeaderSize;
@@ -292,12 +302,12 @@ namespace suota_pgp.Droid.Services
 
                 if (fileNames.Count == 0)
                 {
-                    ShowShortToast($"No files found. Please make sure the firmware file is in the \'{Resources.appFolderNameString}\' folder.");
+                    _notifyManager.ShowShortToast($"No files found. Please make sure the firmware file is in the \'{Resources.appFolderNameString}\' folder.");
                 }
             }
             else
             {
-                ShowShortToast("Storage inaccessible. Please make sure that storage permissions are enabled.");
+                _notifyManager.ShowShortToast("Storage inaccessible. Please make sure that storage permissions are enabled.");
             }
 
             _stateManager.State = AppState.Idle;
@@ -353,12 +363,12 @@ namespace suota_pgp.Droid.Services
                 {
                     _logger.Log("Writing to file \"" + fileName + "\"", Category.Info, Priority.None);
                     await sw.WriteAsync(json);
-                    ShowShortToast($"Saved to {_path + "/" + fileName}");
+                    _notifyManager.ShowShortToast($"Saved to {_path + "/" + fileName}");
                 }
             }
             catch
             {
-                ShowShortToast("Unable to write key file. Make sure you have storage permissions enabled.");
+                _notifyManager.ShowShortToast("Unable to write key file. Make sure you have storage permissions enabled.");
                 _logger.Log("Error writing to file \"" + fileName + "\"", Category.Exception, Priority.None);
             }
         }

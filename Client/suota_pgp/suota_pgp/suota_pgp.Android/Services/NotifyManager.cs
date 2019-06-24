@@ -1,23 +1,22 @@
 ﻿using Android.App;
-using Android.Content;
 using Android.Widget;
 using Plugin.CurrentActivity;
-using Prism.Mvvm;
 using Xamarin.Forms;
 
 namespace suota_pgp.Droid.Services
 {
-    /// <summary>
-    /// Base Manager provides Toast and Dialog notifications.
-    /// </summary>
-    internal class BaseManager : BindableBase
+    internal class NotifyManager : INotifyManager
     {
-        private ICurrentActivity _activity;
-
         /// <summary>
-        /// Initialize a new instance of 'BaseManager'.
+        /// Current Activity.
         /// </summary>
-        protected BaseManager(ICurrentActivity activity)
+        private ICurrentActivity _activity;
+        
+        /// <summary>
+        /// Initialize a new instance of 'NotificationManager'.
+        /// </summary>
+        /// <param name="activity">Current Activity.</param>
+        public NotifyManager(ICurrentActivity activity)
         {
             _activity = activity;
         }
@@ -26,7 +25,7 @@ namespace suota_pgp.Droid.Services
         /// Show a long duration toast notification.
         /// </summary>
         /// <param name="message">Message to show.</param>
-        protected void ShowLongToast(string message)
+        public void ShowLongToast(string message)
         {
             Device.BeginInvokeOnMainThread(
             () => Toast.MakeText(_activity.Activity,
@@ -37,7 +36,7 @@ namespace suota_pgp.Droid.Services
         /// Show a short duration toast notification.
         /// </summary>
         /// <param name="message">Message to show.</param>
-        protected void ShowShortToast(string message)
+        public void ShowShortToast(string message)
         {
             Device.BeginInvokeOnMainThread(
             () => Toast.MakeText(_activity.Activity,
@@ -48,7 +47,7 @@ namespace suota_pgp.Droid.Services
         /// Show an information dialog box.
         /// </summary>
         /// <param name="message">Message to show.</param>
-        protected void ShowDialogInfoBox(string message)
+        public void ShowDialogInfoBox(string message)
         {
             Device.BeginInvokeOnMainThread(
             () => new AlertDialog.Builder(_activity.Activity)
@@ -61,7 +60,7 @@ namespace suota_pgp.Droid.Services
         /// Show an error dialog box.
         /// </summary>
         /// <param name="message">Message to show.</param>
-        protected void ShowDialogErrorBox(string message)
+        public void ShowDialogErrorBox(string message)
         {
             Device.BeginInvokeOnMainThread(
             () => new AlertDialog.Builder(CrossCurrentActivity.Current.Activity)

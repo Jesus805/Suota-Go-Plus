@@ -10,6 +10,7 @@ namespace suota_pgp
     {
         private IEventAggregator _aggregator;
         private IBleManager _bleManager;
+        private IExtractorManager _extractManager;
         private IFileManager _fileService;
 
         private AppState _appState;
@@ -73,12 +74,14 @@ namespace suota_pgp
         public DelegateCommand RestoreCommand { get; private set; }
 
         public DeviceInfoViewModel(IEventAggregator aggregator,
-                                   IBleManager bleService, 
+                                   IBleManager bleService,
+                                   IExtractorManager extractManager,
                                    IFileManager fileService,
                                    IStateManager stateManager)
         {
             _aggregator = aggregator;
             _bleManager = bleService;
+            _extractManager = extractManager;
             _fileService = fileService;
 
             Devices = new ObservableCollection<GoPlus>();
@@ -105,7 +108,7 @@ namespace suota_pgp
 
         private async void GetDeviceInfo()
         {
-            await _bleManager.GetDeviceInfo(SelectedDevice);
+            await _extractManager.GetDeviceInfo(SelectedDevice);
             SaveCommand.RaiseCanExecuteChanged();
         }
 
@@ -157,7 +160,7 @@ namespace suota_pgp
 
         private void Restore()
         {
-            _bleManager.RestoreDevice(SelectedDevice);
+            _extractManager.RestoreDevice(SelectedDevice);
         }
 
         private bool RestoreCanExecute()

@@ -10,12 +10,10 @@ namespace suota_pgp.Services
         Task ConnectDevice(GoPlus device);
         Task DisconnectDevice(GoPlus device);
         List<GoPlus> GetBondedDevices();
-        Task GetDeviceInfo(GoPlus device);
         Task NotifyRegister(GoPlus device, Guid characteristic);
         Task NotifyUnregister(GoPlus device, Guid characteristic);
         Task<byte[]> ReadCharacteristic(GoPlus device, Guid characteristic);
         void RemoveBond(GoPlus device);
-        Task RestoreDevice(GoPlus device);
         void Scan();
         void StopScan();
         Task WriteCharacteristic(GoPlus device, Guid characteristic, byte value, bool noResponse = false);

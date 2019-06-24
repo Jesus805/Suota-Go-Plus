@@ -17,7 +17,7 @@ namespace suota_pgp.Model
 
         public const int HeaderSize = 0x40;
 
-        public const int DelayMS = 10;
+        public const int DelayMS = 500;
 
         /// <summary>
         /// Suota Commands
@@ -54,6 +54,10 @@ namespace suota_pgp.Model
         /// Restore Go+ to it's original firmware - WRITE
         /// </summary>
         public static readonly Guid RestoreCharacteristicUuid = Guid.Parse("6b64be6f-5467-d8b5-7143-1716be1b96be");
+        /// <summary>
+        /// Restore State Status - READ, NOTIFY
+        /// </summary>
+        public static readonly Guid RestoreCharacteristicStatusUuid = Guid.Parse("a258f13e-9559-a498-b144-d863a013db06");
 
         public static readonly byte[] SuotaAdvertisementUuid = { 0xFE, 0xF5 };
         /// <summary>
@@ -102,6 +106,7 @@ namespace suota_pgp.Model
             { KeyCharacteristicUuid, ExtractorServiceUuid },
             { BlobCharacteristicUuid, ExtractorServiceUuid },
             { RestoreCharacteristicUuid, ExtractorServiceUuid },
+            { RestoreCharacteristicStatusUuid, ExtractorServiceUuid },
 
             { GoPlusUpdateRequestUuid, GoPlusServiceUuuid },
 
