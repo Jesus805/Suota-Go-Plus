@@ -20,7 +20,7 @@ namespace suota_pgp.Services
 
         List<byte[]> GetHeaderChunks();
 
-        Task<List<string>> GetFirmwareFileNames();
+        Task<List<PatchFile>> GetFirmwareFileNames();
 
         void LoadFirmware(string fileName);
         

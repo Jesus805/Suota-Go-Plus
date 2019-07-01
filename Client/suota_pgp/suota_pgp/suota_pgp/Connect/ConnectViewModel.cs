@@ -16,7 +16,7 @@ namespace suota_pgp
     /// </summary>
     public class ConnectViewModel : ViewModelBase
     {
-        private IEventAggregator _aggregator;
+        private IEventAggregator _eventAggregator;
         private IBleManager _bleManager;
         private IFileManager _fileManager;
         private ISuotaManager _suotaManager;
@@ -30,7 +30,7 @@ namespace suota_pgp
         /// <summary>
         /// List of firmware files with a .img extension.
         /// </summary>
-        public ObservableCollection<string> FileNames { get; private set; }
+        public ObservableCollection<PatchFile> FileNames { get; private set; }
 
         /// <summary>
         /// Selected GO+ device.
@@ -51,8 +51,8 @@ namespace suota_pgp
         /// <summary>
         /// Selected firmware file name.
         /// </summary>
-        private string _selectedFileName;
-        public string SelectedFileName
+        private PatchFile _selectedFileName;
+        public PatchFile SelectedFileName
         {
             get => _selectedFileName;
             set
@@ -118,26 +118,26 @@ namespace suota_pgp
         /// <summary>
         /// Initialize a new instance of 'ConnectViewModel'
         /// </summary>
-        /// <param name="aggregator">Prism dependency injected 'IEventAggregator'</param>
+        /// <param name="eventAggregator">Prism dependency injected 'IEventAggregator'</param>
         /// <param name="bleManager">Prism dependency injected 'IBleManager'</param>
         /// <param name="fileManager">Prism dependency injected 'IFileManager'</param>
         /// <param name="navService">Prism dependency injected 'INavigationService'</param>
         /// <param name="suotaManager">Prism dependency injected 'ISuotaManager'</param>
-        public ConnectViewModel(IEventAggregator aggregator,
-                                IBleManager bleManager,
+        public ConnectViewModel(IBleManager bleManager,
+                                IEventAggregator eventAggregator,
                                 IFileManager fileManager,
                                 INavigationService navService,
                                 ISuotaManager suotaManager,
                                 IStateManager stateManager)
         {
-            _aggregator = aggregator;
             _bleManager = bleManager;
+            _eventAggregator = eventAggregator;
             _fileManager = fileManager;
             _suotaManager = suotaManager;
             _navigationService = navService;
             
             Devices = new ObservableCollection<GoPlus>();            
-            FileNames = new ObservableCollection<string>();
+            FileNames = new ObservableCollection<PatchFile>();
 
             BeginSuotaCommand = new DelegateCommand(BeginSuota, CanBeginSuota);
             GetPairedPgpCommand = new DelegateCommand(GetPairedPgp, CanGetPairedPgp);
@@ -146,8 +146,8 @@ namespace suota_pgp
             AppState = stateManager.State;
             ErrorState = stateManager.ErrorState;
 
-            _aggregator.GetEvent<PrismEvents.AppStateChangedEvent>().Subscribe(OnAppStateChanged, ThreadOption.UIThread);
-            _aggregator.GetEvent<PrismEvents.ErrorStateChangedEvent>().Subscribe(OnErrorStateChanged, ThreadOption.UIThread);
+            _eventAggregator.GetEvent<PrismEvents.AppStateChangedEvent>().Subscribe(OnAppStateChanged, ThreadOption.UIThread);
+            _eventAggregator.GetEvent<PrismEvents.ErrorStateChangedEvent>().Subscribe(OnErrorStateChanged, ThreadOption.UIThread);
         }
 
         /// <summary>
@@ -180,7 +180,7 @@ namespace suota_pgp
 
             if (files != null)
             {
-                foreach (string fileName in files)
+                foreach (var fileName in files)
                 {
                     FileNames.Add(fileName);
                 }
@@ -198,7 +198,7 @@ namespace suota_pgp
         /// </summary>
         private void BeginSuota()
         {
-            _suotaManager.RunSuota(SelectedDevice, SelectedFileName);
+            _suotaManager.RunSuota(SelectedDevice, SelectedFileName.Name);
             _navigationService.NavigateAsync("SuotaView");
         }
         
@@ -207,7 +207,8 @@ namespace suota_pgp
             return AppState == AppState.Idle &&
                    ErrorState == ErrorState.None &&
                    SelectedDevice != null &&
-                   !string.IsNullOrEmpty(SelectedFileName);
+                   SelectedFileName != null &&
+                   !string.IsNullOrEmpty(SelectedFileName.Name);
         }
 
         /// <summary>

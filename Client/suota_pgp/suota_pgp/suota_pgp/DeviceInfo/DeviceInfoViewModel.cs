@@ -13,6 +13,13 @@ namespace suota_pgp
         private IExtractorManager _extractManager;
         private IFileManager _fileService;
 
+        private bool _isScanning;
+        public bool IsScanning
+        {
+            get => _isScanning;
+            set => SetProperty(ref _isScanning, value);
+        }
+
         private AppState _appState;
         public AppState AppState
         {
@@ -65,13 +72,13 @@ namespace suota_pgp
 
         public DelegateCommand GetDeviceInfoCommand { get; private set; }
 
+        public DelegateCommand RestoreCommand { get; private set; }
+
         public DelegateCommand SaveCommand { get; private set; }
 
         public DelegateCommand ScanCommand { get; private set; }
 
         public DelegateCommand StopScanCommand { get; private set; }
-
-        public DelegateCommand RestoreCommand { get; private set; }
 
         public DeviceInfoViewModel(IEventAggregator aggregator,
                                    IBleManager bleService,
@@ -98,9 +105,10 @@ namespace suota_pgp
             _aggregator.GetEvent<PrismEvents.AppStateChangedEvent>().Subscribe(OnAppStateChanged, ThreadOption.UIThread);
             _aggregator.GetEvent<PrismEvents.GoPlusFoundEvent>().Subscribe(OnGoPlusFound, ThreadOption.UIThread);
             _aggregator.GetEvent<PrismEvents.ErrorStateChangedEvent>().Subscribe(OnErrorStateChanged, ThreadOption.UIThread);
+            _aggregator.GetEvent<PrismEvents.RestoreCompleteEvent>().Subscribe(OnRestoreComplete, ThreadOption.UIThread);
         }
 
-        protected void Clear()
+        private void Clear()
         {
             SelectedDevice = null;
             Devices.Clear();
@@ -136,6 +144,7 @@ namespace suota_pgp
         private void Scan()
         {
             Clear();
+            IsScanning = true;
             _bleManager.Scan();
         }
 
@@ -185,10 +194,15 @@ namespace suota_pgp
 
         private void OnGoPlusFound(GoPlus pgp)
         {
-            if (_isViewActive && pgp != null)
+            if (AppState == AppState.Scanning && pgp != null)
             {
                 Devices.Add(pgp);
             }
+        }
+
+        private void OnRestoreComplete()
+        {
+            Clear();
         }
 
         #endregion

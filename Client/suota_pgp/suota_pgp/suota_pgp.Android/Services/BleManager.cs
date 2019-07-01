@@ -312,6 +312,9 @@ namespace suota_pgp.Droid.Services
                 throw new Exception("This device is not connected");
             }
 
+            // Wait a bit before reading.
+            await Task.Delay(Constants.DelayMS);
+
             ICharacteristic characteristic;
 
             if (_charCache.ContainsKey(charUuid))
@@ -583,18 +586,22 @@ namespace suota_pgp.Droid.Services
                 }
                 else if (record.Type == AdvertisementRecordType.UuidsComplete16Bit)
                 {
-                    if (string.Compare(Constants.GoPlusName, androidDev.Name) == 0 &&
-                        record.Data[0] == Constants.SuotaAdvertisementUuid[0] && 
-                        record.Data[1] == Constants.SuotaAdvertisementUuid[1])
+                    if (string.Compare(Constants.GoPlusName, androidDev.Name) == 0)
                     {
-                        _logger.Log($"GO Plus SUOTA Discovered!", Category.Info, Priority.None);
-                        GoPlus pgp = new GoPlus()
+                        if (record.Data != null &&
+                            record.Data.Length > 1 && 
+                            record.Data[0] == Constants.SuotaAdvertisementUuid[0] &&
+                            record.Data[1] == Constants.SuotaAdvertisementUuid[1])
                         {
-                            Name = androidDev.Name,
-                            BtAddress = androidDev.Address
-                        };
-                        _devicesFound.Add(pgp, device);
-                        _aggregator.GetEvent<PrismEvents.GoPlusFoundEvent>().Publish(pgp);
+                            _logger.Log($"GO Plus SUOTA Discovered!", Category.Info, Priority.None);
+                            GoPlus pgp = new GoPlus()
+                            {
+                                Name = androidDev.Name,
+                                BtAddress = androidDev.Address
+                            };
+                            _devicesFound.Add(pgp, device);
+                            _aggregator.GetEvent<PrismEvents.GoPlusFoundEvent>().Publish(pgp);
+                        }
                     }
                 }
             } 

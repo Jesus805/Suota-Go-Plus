@@ -17,12 +17,12 @@ namespace suota_pgp.Model
 
         public const int HeaderSize = 0x40;
 
-        public const int DelayMS = 500;
+        public const int DelayMS = 10;
 
         /// <summary>
         /// Suota Commands
         /// </summary>
-        public const int SpotaImgEnd = 0xFE;
+        public const int SpotaImgEnd         = 0xFE;
         public const int SpotaMemServiceExit = 0xFF;
 
         /// <summary>

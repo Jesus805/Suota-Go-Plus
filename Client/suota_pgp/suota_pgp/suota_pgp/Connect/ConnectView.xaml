@@ -97,8 +97,7 @@
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <ViewCell>
-                            <Label Margin="10" 
-                                   Text="{Binding}"/>
+                            <Label Margin="10" Text="{Binding Name}"/>
                         </ViewCell>
                     </DataTemplate>
                 </ListView.ItemTemplate>

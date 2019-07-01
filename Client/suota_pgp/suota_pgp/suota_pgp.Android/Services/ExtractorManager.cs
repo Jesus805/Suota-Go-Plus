@@ -128,7 +128,8 @@ namespace suota_pgp.Droid.Services
 
                 if (value == 1)
                 {
-                    _notifyManager.ShowDialogInfoBox("Restore Complete, please restart the device.");
+                    _notifyManager.ShowDialogInfoBox("Restore Complete, the device should automatically restart.");
+                    _aggregator.GetEvent<PrismEvents.RestoreCompleteEvent>().Publish();
                 }
                 else
                 {

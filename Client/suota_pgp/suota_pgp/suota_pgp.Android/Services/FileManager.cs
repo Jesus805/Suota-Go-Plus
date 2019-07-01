@@ -271,7 +271,7 @@ namespace suota_pgp.Droid.Services
         /// Get all firmware files (.img).
         /// </summary>
         /// <returns>A list of firmware names</returns>
-        public async Task<List<string>> GetFirmwareFileNames()
+        public async Task<List<PatchFile>> GetFirmwareFileNames()
         {
             if (_stateManager.State != AppState.Idle)
                 return null;
@@ -280,7 +280,7 @@ namespace suota_pgp.Droid.Services
 
             _logger.Log("Attempting to get firmware File names", Category.Info, Priority.None);
 
-            List<string> fileNames = new List<string>();
+            List<PatchFile> fileNames = new List<PatchFile>();
             File dir = new File(_path);
 
             if (!IsExternalStorageAccessible(dir))
@@ -296,7 +296,7 @@ namespace suota_pgp.Droid.Services
                 {
                     if (file.Name.EndsWith(".img"))
                     {
-                        fileNames.Add(file.Name);
+                        fileNames.Add(new PatchFile() { Name = file.Name });
                     }
                 }
 
