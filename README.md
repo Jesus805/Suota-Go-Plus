@@ -18,7 +18,7 @@ Build The project
 ## Building the Firmware from source
 I do not recommend this option unless you have a DA14580 development board to test it on. 
 
-Instructions are listed in `/Firmware/README.md`
+Instructions are listed in `\Firmware\README.md`
 
 ## Installation
 1. Install the `Suota Go+.apk` on your Android Device.
