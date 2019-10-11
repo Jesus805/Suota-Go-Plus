@@ -1,6 +1,6 @@
 # SUOTA Go+
 
-YOU ACKNOWLEDGE THERE MAY BE RISKS OF USING THIS SOFTWARE, I AM NOT LIABLE FOR ANY BRICKED PGP.
+YOU ACKNOWLEDGE THERE MAY BE RISKS USING THIS SOFTWARE, I AM NOT LIABLE FOR ANY BRICKED PGP.
 
 Suota Go+ is an Android Client and DA14580 image that can extract the Device/Blob Key from any Pokemon Go Plus over-the-air. (Pokeball Plus is not supported!). The client performs the over-the-air installation process, extracts the device/blob key, and saves the keys as a *\*.json* file. So far I have successfully extracted keys from 3 different PGP (2 legitimate, 1 clone) on a Samsung Galaxy S8+ and a One Plus 5. Unfortunately iOS is not supported, if anyone is interested in implementing it please submit a pull request or create your own client and I will link it on this project. 
 
