@@ -53,11 +53,11 @@ namespace suota_pgp.Droid.Services
 
                 await _bleManager.ConnectDevice(device);
 
-                byte[] key = await _bleManager.ReadCharacteristic(device, Constants.KeyCharacteristicUuid);
-                device.Key = Helper.ByteArrayToString(key);
+                byte[] key = await _bleManager.ReadCharacteristic(device, Constants.DeviceKeyCharacteristicUuid);
+                device.DeviceKey = Helper.ByteArrayToString(key);
 
-                byte[] blob = await _bleManager.ReadCharacteristic(device, Constants.BlobCharacteristicUuid);
-                device.Blob = Helper.ByteArrayToString(blob);
+                byte[] blob = await _bleManager.ReadCharacteristic(device, Constants.BlobKeyCharacteristicUuid);
+                device.BlobKey = Helper.ByteArrayToString(blob);
 
                 await _bleManager.DisconnectDevice(device);
             }

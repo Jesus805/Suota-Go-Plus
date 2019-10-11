@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("suota_pgp.Android")]
-[assembly: AssemblyCopyright("Copyright CoderJesus© 2019")]
+[assembly: AssemblyCopyright("Copyright CoderJesus.com © 2019")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 [assembly: ComVisible(false)]

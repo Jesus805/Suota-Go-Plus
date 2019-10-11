@@ -18,7 +18,7 @@ namespace suota_pgp.Model
         public byte[] Value { get; }
 
         /// <summary>
-        /// Get the new value as an Integer (Little Endian).
+        /// New value as an Integer (Little Endian).
         /// </summary>
         public int IntValue
         {

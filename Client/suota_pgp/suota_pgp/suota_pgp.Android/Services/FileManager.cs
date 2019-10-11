@@ -353,7 +353,7 @@ namespace suota_pgp.Droid.Services
 
             string json = Serialize(device);
 
-            string fileName = Resources.appFileNameString + " " +
+            string fileName = Resources.appFileNameString + " " + device.BtAddress + " " +
                               DateTime.Now.ToString().Replace(':', '-').Replace('/', '-') + 
                               ".json";
 
@@ -386,11 +386,11 @@ namespace suota_pgp.Droid.Services
             sb.Append("  \"bluetooth\": \"");
             sb.Append(device.BtAddress);
             sb.Append("\",\n");
-            sb.Append("  \"key\": \"");
-            sb.Append(device.Key);
+            sb.Append("  \"device\": \"");
+            sb.Append(device.DeviceKey);
             sb.Append("\",\n");
             sb.Append("  \"blob\": \"");
-            sb.Append(device.Blob);
+            sb.Append(device.BlobKey);
             sb.Append("\"\n}");
             return sb.ToString();
         }

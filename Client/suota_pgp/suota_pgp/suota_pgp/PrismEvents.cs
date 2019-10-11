@@ -7,8 +7,6 @@ namespace suota_pgp
     {
         public class AppStateChangedEvent : PubSubEvent<AppState> { }
 
-        public class BluetoothStateChangedEvent : PubSubEvent { }
-
         public class CharacteristicUpdatedEvent : PubSubEvent<CharacteristicUpdate> { }
 
         public class ErrorStateChangedEvent : PubSubEvent<ErrorState> { }

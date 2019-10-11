@@ -43,13 +43,13 @@ namespace suota_pgp.Model
         /// </summary>
         public static readonly Guid ExtractorServiceUuid      = Guid.Parse("845d8f76-1f3b-5895-aa48-07af9bb16bdc");
         /// <summary>
-        /// Read Key - READ
+        /// Read Device Key - READ
         /// </summary>
-        public static readonly Guid KeyCharacteristicUuid     = Guid.Parse("870d5ab1-20bd-b88a-5746-a97f5c33ea58");
+        public static readonly Guid DeviceKeyCharacteristicUuid     = Guid.Parse("870d5ab1-20bd-b88a-5746-a97f5c33ea58");
         /// <summary>
-        /// Read Blob - READ
+        /// Read Blob Key - READ
         /// </summary>
-        public static readonly Guid BlobCharacteristicUuid    = Guid.Parse("fe0002af-f8e3-f1b2-b141-b40adf381d18");
+        public static readonly Guid BlobKeyCharacteristicUuid    = Guid.Parse("fe0002af-f8e3-f1b2-b141-b40adf381d18");
         /// <summary>
         /// Restore Go+ to it's original firmware - WRITE
         /// </summary>
@@ -58,41 +58,42 @@ namespace suota_pgp.Model
         /// Restore State Status - READ, NOTIFY
         /// </summary>
         public static readonly Guid RestoreCharacteristicStatusUuid = Guid.Parse("a258f13e-9559-a498-b144-d863a013db06");
-
+        /// <summary>
+        /// Dialog Semiconductor's proprietary SUOTA Service.
+        /// </summary>
         public static readonly byte[] SuotaAdvertisementUuid = { 0xFE, 0xF5 };
         /// <summary>
         /// Go+ Service
         /// </summary>
-        public static readonly Guid GoPlusServiceUuuid      = Guid.Parse("21c50462-67cb-63a3-5c4c-82b5b9939aeb");
+        public static readonly Guid GoPlusServiceUuuid = Guid.Parse("21c50462-67cb-63a3-5c4c-82b5b9939aeb");
         /// <summary>
         /// Update Request - READ, WRITE
         /// </summary>
         public static readonly Guid GoPlusUpdateRequestUuid = Guid.Parse("21c50462-67cb-63a3-5c4c-82b5b9939aef");
-
         /// <summary>
         /// SUOTA Service
         /// </summary>
-        public static readonly Guid SpotaServiceUuid    = Guid.Parse("0000fef5-0000-1000-8000-00805f9b34fb");
+        public static readonly Guid SpotaServiceUuid = Guid.Parse("0000fef5-0000-1000-8000-00805f9b34fb");
         /// <summary>
         /// Patch Memory Device - READ, WRITE
         /// </summary>
-        public static readonly Guid SpotaMemDevUuid     = Guid.Parse("8082caa8-41a6-4021-91c6-56f9b954cc34");
+        public static readonly Guid SpotaMemDevUuid = Guid.Parse("8082caa8-41a6-4021-91c6-56f9b954cc34");
         /// <summary>
         /// GPIO Mapping - READ, WRITE
         /// </summary>
-        public static readonly Guid SpotaGpioMapUuid    = Guid.Parse("724249f0-5eC3-4b5f-8804-42345af08651");
+        public static readonly Guid SpotaGpioMapUuid = Guid.Parse("724249f0-5eC3-4b5f-8804-42345af08651");
         /// <summary>
         /// Patch Memory Information - READ
         /// </summary>
-        public static readonly Guid SpotaMemInfoUuid    = Guid.Parse("6c53db25-47a1-45fe-a022-7c92fb334fd4");
+        public static readonly Guid SpotaMemInfoUuid = Guid.Parse("6c53db25-47a1-45fe-a022-7c92fb334fd4");
         /// <summary>
         /// Patch Length - READ, WRITE
         /// </summary>
-        public static readonly Guid SpotaPatchLenUuid   = Guid.Parse("9d84b9a3-000c-49d8-9183-855b673fda31");
+        public static readonly Guid SpotaPatchLenUuid = Guid.Parse("9d84b9a3-000c-49d8-9183-855b673fda31");
         /// <summary>
         /// Patch Data - READ, WRITE, WRITE NO RESPONSE
         /// </summary>
-        public static readonly Guid SpotaPatchDataUuid  = Guid.Parse("457871e8-d516-4ca1-9116-57d0b17b9cb2");
+        public static readonly Guid SpotaPatchDataUuid = Guid.Parse("457871e8-d516-4ca1-9116-57d0b17b9cb2");
         /// <summary>
         /// Patch Status - READ, NOTIFY
         /// </summary>
@@ -103,8 +104,8 @@ namespace suota_pgp.Model
         /// </summary>
         public static readonly Dictionary<Guid, Guid> Char2ServiceMap = new Dictionary<Guid, Guid>()
         {
-            { KeyCharacteristicUuid, ExtractorServiceUuid },
-            { BlobCharacteristicUuid, ExtractorServiceUuid },
+            { DeviceKeyCharacteristicUuid, ExtractorServiceUuid },
+            { BlobKeyCharacteristicUuid, ExtractorServiceUuid },
             { RestoreCharacteristicUuid, ExtractorServiceUuid },
             { RestoreCharacteristicStatusUuid, ExtractorServiceUuid },
 

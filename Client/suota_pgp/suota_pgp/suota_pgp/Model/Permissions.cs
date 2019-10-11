@@ -1,6 +1,4 @@
-﻿using Prism.Mvvm;
-
-namespace suota_pgp.Model
+﻿namespace suota_pgp.Model
 {
     public class PermissionState
     {

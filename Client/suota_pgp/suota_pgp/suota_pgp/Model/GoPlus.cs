@@ -3,12 +3,12 @@
 namespace suota_pgp.Model
 {
     /// <summary>
-    /// Pokemon Go Plus identifier.
+    /// Pokemon Go Plus model.
     /// </summary>
     public class GoPlus : BindableBase
     {
         /// <summary>
-        /// Pokemon GO Plus' Name.
+        /// Instance Name.
         /// </summary>
         private string _name;
         public string Name
@@ -20,8 +20,9 @@ namespace suota_pgp.Model
                 RaisePropertyChanged("IsComplete");
             }
         }
+        
         /// <summary>
-        /// Pokemon GO Plus' Bluetooth Address.
+        /// Bluetooth Address.
         /// </summary>
         private string _btAddress;
         public string BtAddress
@@ -33,41 +34,49 @@ namespace suota_pgp.Model
                 RaisePropertyChanged("IsComplete");
             }
         }
+        
         /// <summary>
-        /// 16 byte unique key
+        /// 16 byte unique device key.
         /// </summary>
-        private string _key;
-        public string Key
+        private string _deviceKey;
+        public string DeviceKey
         {
-            get => _key;
+            get => _deviceKey;
             set
             {
-                SetProperty(ref _key, value);
+                SetProperty(ref _deviceKey, value);
                 RaisePropertyChanged("IsComplete");
             }
         }
+        
         /// <summary>
-        /// 256 byte unique blob
+        /// 256 byte unique blob key.
         /// </summary>
-        private string _blob;
-        public string Blob
+        private string _blobKey;
+        public string BlobKey
         {
-            get => _blob;
+            get => _blobKey;
             set
             {
-                SetProperty(ref _blob, value);
+                SetProperty(ref _blobKey, value);
                 RaisePropertyChanged("IsComplete");
             }
         }
-
+        
+        /// <summary>
+        /// returns true if all fields are filled in; false otherwise.
+        /// </summary>
         public bool IsComplete
         {
             get => !string.IsNullOrEmpty(Name) &&
                    !string.IsNullOrEmpty(BtAddress) &&
-                   !string.IsNullOrEmpty(Key) &&
-                   !string.IsNullOrEmpty(Blob);
+                   !string.IsNullOrEmpty(DeviceKey) &&
+                   !string.IsNullOrEmpty(BlobKey);
         }
 
+        /// <summary>
+        /// Initializes a new Instance of 'GoPlus'
+        /// </summary>
         public GoPlus() { }
     }
 }
