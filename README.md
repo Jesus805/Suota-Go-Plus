@@ -1,5 +1,6 @@
 # SUOTA Go+
 
+For my blog post about this project. Including all the technical information that I learned, please visit my website
 https://coderjesus.com/blog/pgp-suota/
 
 YOU ACKNOWLEDGE THERE MAY BE RISKS USING THIS SOFTWARE, I AM NOT LIABLE FOR ANY BRICKED PGP.
@@ -44,6 +45,3 @@ Instructions are listed in `\Firmware\README.md`
 ## Tips
 
 To maximize your success, please ensure that the Go+ is next to your mobile device. It is also recommended to use a new battery before beginning the process.
-
-For my blog post about this project. Including all the technical information that I learned, please visit my website
-<Domain>
