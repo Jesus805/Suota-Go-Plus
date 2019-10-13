@@ -22,9 +22,9 @@ uint8_t pgp_restored = 0;
  ****************************************************************************************
 */
 void user_custs1_restore_wr_handler(ke_msg_id_t const msgid,
-	struct custs1_val_write_ind const* param,
-	ke_task_id_t const dest_id,
-	ke_task_id_t const src_id)
+                                    struct custs1_val_write_ind const* param,
+                                    ke_task_id_t const dest_id,
+                                    ke_task_id_t const src_id)
 {
     uint8_t val = 0;
     memcpy(&val, &param->value[0], param->length);
