@@ -9,33 +9,35 @@ namespace suota_pgp
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value == null)
+            {
                 return null;
+            }
 
             if (value is ErrorState state)
             {
                 if (state.HasFlag(ErrorState.LocationUnauthorized) &&
                     state.HasFlag(ErrorState.StorageUnauthorized))
                 {
-                    return "⚠️ Please enable location and storage permissions.";
+                    return Resources.EnableLocationAndStorageString;
                 }
                 else if (state.HasFlag(ErrorState.StorageUnauthorized))
                 {
-                    return "⚠️ Please enable storage permissions";
+                    return Resources.EnableStorageString;
                 }
                 else if (state.HasFlag(ErrorState.LocationUnauthorized))
                 {
-                    return "⚠️ Please enable location permissions.";
+                    return Resources.EnableLocationString;
                 }
                 else if (state.HasFlag(ErrorState.BluetoothDisabled))
                 {
-                    return "⚠️ Bluetooth adapter is disabled.";
+                    return Resources.BluetoothDisabledString;
                 }
 
                 return string.Empty;
             }
             else
             {
-                throw new ArgumentException("value must be ErrorState", "value");
+                throw new ArgumentException("value must be ErrorState", nameof(value));
             }
         }
 

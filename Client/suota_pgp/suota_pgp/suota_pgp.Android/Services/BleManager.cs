@@ -8,6 +8,7 @@ using suota_pgp.Model;
 using suota_pgp.Services;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace suota_pgp.Droid.Services
@@ -65,7 +66,7 @@ namespace suota_pgp.Droid.Services
         public List<GoPlus> GetBondedDevices()
         {
             _devicesFound.Clear();
-            List<IDevice> devices = _adapter.GetSystemConnectedOrPairedDevices();
+            IReadOnlyList<IDevice> devices = _adapter.GetSystemConnectedOrPairedDevices();
             List<GoPlus> pgpList = new List<GoPlus>();
 
             foreach (var device in devices)
@@ -138,7 +139,7 @@ namespace suota_pgp.Droid.Services
         {
             if (device == null)
             {
-                throw new ArgumentNullException("device");
+                throw new ArgumentNullException(nameof(device));
             }
 
             if (!_devicesFound.ContainsKey(device))
@@ -351,7 +352,7 @@ namespace suota_pgp.Droid.Services
                     {
                         if (i < Constants.RetryCount - 1)
                         {
-                            _aggregator.GetEvent<PrismEvents.ProgressUpdateEvent>().Publish(new Progress($"Write to characteristic unsuccessful, trying again."));
+                            _aggregator.GetEvent<PrismEvents.SuotaProgressUpdateEvent>().Publish(new SuotaProgress($"Write to characteristic unsuccessful, trying again."));
                             _logger.Log($"Write to characteristic unsuccessful, trying again.", Category.Exception, Priority.High);
                         }
                     }
@@ -359,7 +360,7 @@ namespace suota_pgp.Droid.Services
                 catch (Exception e)
                 {
                     _logger.Log($"Error writing characteristic: {e.Message}. Trying again.", Category.Exception, Priority.High);
-                    _aggregator.GetEvent<PrismEvents.ProgressUpdateEvent>().Publish(new Progress($"Error writing characteristic: {e.Message}. Trying again."));
+                    _aggregator.GetEvent<PrismEvents.SuotaProgressUpdateEvent>().Publish(new SuotaProgress($"Error writing characteristic: {e.Message}. Trying again."));
                 }
                 await Task.Delay(1000);
             }
@@ -423,7 +424,7 @@ namespace suota_pgp.Droid.Services
                         if (i < Constants.RetryCount - 1)
                         {
                             _logger.Log($"Error reading characteristic: {e.Message}. Trying again.", Category.Exception, Priority.High);
-                            _aggregator.GetEvent<PrismEvents.ProgressUpdateEvent>().Publish(new Progress($"Error reading characteristic: {e.Message}. Trying again."));
+                            _aggregator.GetEvent<PrismEvents.SuotaProgressUpdateEvent>().Publish(new SuotaProgress($"Error reading characteristic: {e.Message}. Trying again."));
                             await Task.Delay(1000);
                         }
                     }

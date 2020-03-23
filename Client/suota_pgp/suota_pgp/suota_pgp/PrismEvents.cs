@@ -5,17 +5,13 @@ namespace suota_pgp
 {
     public static class PrismEvents
     {
-        public class AppStateChangedEvent : PubSubEvent<AppState> { }
-
         public class CharacteristicUpdatedEvent : PubSubEvent<CharacteristicUpdate> { }
-
-        public class ErrorStateChangedEvent : PubSubEvent<ErrorState> { }
 
         public class GoPlusFoundEvent : PubSubEvent<GoPlus> { }
 
         public class PermissionStateChangedEvent : PubSubEvent<PermissionState> { }
 
-        public class ProgressUpdateEvent : PubSubEvent<Progress> { }
+        public class SuotaProgressUpdateEvent : PubSubEvent<SuotaProgress> { }
 
         public class RestoreCompleteEvent : PubSubEvent { }
     }

@@ -35,11 +35,11 @@ namespace suota_pgp
         {
             _aggregator = aggregator;
             _navigation = navigation;
-            _aggregator.GetEvent<PrismEvents.ProgressUpdateEvent>().Subscribe(OnProgressUpdate, ThreadOption.UIThread);
+            _aggregator.GetEvent<PrismEvents.SuotaProgressUpdateEvent>().Subscribe(OnProgressUpdate, ThreadOption.UIThread);
             ProgressText = string.Empty;
         }
 
-        private void OnProgressUpdate(Progress progress)
+        private void OnProgressUpdate(SuotaProgress progress)
         {
             if (progress.IsComplete)
             {

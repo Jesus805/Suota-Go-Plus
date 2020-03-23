@@ -1,6 +1,8 @@
-﻿namespace suota_pgp
+﻿using System.ComponentModel;
+
+namespace suota_pgp
 {
-    public interface IStateManager
+    public interface IStateManager : INotifyPropertyChanged
     {
         AppState State { get; set; }
 

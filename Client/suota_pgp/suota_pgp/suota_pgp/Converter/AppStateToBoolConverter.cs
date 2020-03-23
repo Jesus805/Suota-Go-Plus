@@ -15,7 +15,7 @@ namespace suota_pgp
             }
             else
             {
-                throw new ArgumentException("State expected", "value");
+                throw new ArgumentException("AppState expected", nameof(value));
             }
 
             if (parameter is string inverse)

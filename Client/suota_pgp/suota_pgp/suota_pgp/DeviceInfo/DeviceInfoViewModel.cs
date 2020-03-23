@@ -1,60 +1,24 @@
 ﻿using Prism.Commands;
 using Prism.Events;
+using Prism.Mvvm;
+using Prism.Navigation;
 using suota_pgp.Model;
 using suota_pgp.Services;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 
 namespace suota_pgp
 {
-    public class DeviceInfoViewModel : ViewModelBase
+    public class DeviceInfoViewModel : BindableBase, INavigationAware
     {
-        private IEventAggregator _aggregator;
-        private IBleManager _bleManager;
-        private IExtractorManager _extractManager;
-        private IFileManager _fileService;
+        private readonly IBleManager _bleManager;
+        private readonly IEventAggregator _eventAggregator;
+        private readonly IExtractorManager _extractManager;
+        private readonly IFileManager _fileService;
 
-        private bool _isScanning;
-        public bool IsScanning
-        {
-            get => _isScanning;
-            set => SetProperty(ref _isScanning, value);
-        }
+        public IStateManager StateManager { get; }
 
-        private AppState _appState;
-        public AppState AppState
-        {
-            get => _appState;
-            private set
-            {
-                if (SetProperty(ref _appState, value))
-                {
-                    GetDeviceInfoCommand.RaiseCanExecuteChanged();
-                    RestoreCommand.RaiseCanExecuteChanged();
-                    SaveCommand.RaiseCanExecuteChanged();
-                    ScanCommand.RaiseCanExecuteChanged();
-                    StopScanCommand.RaiseCanExecuteChanged();
-                }
-            }
-        }
-
-        private ErrorState _errorState;
-        public ErrorState ErrorState
-        {
-            get => _errorState;
-            set
-            {
-                if (SetProperty(ref _errorState, value))
-                {
-                    GetDeviceInfoCommand.RaiseCanExecuteChanged();
-                    RestoreCommand.RaiseCanExecuteChanged();
-                    SaveCommand.RaiseCanExecuteChanged();
-                    ScanCommand.RaiseCanExecuteChanged();
-                    StopScanCommand.RaiseCanExecuteChanged();
-                }
-            }
-        }
-
-        public ObservableCollection<GoPlus> Devices { get; private set; }
+        public ObservableCollection<GoPlus> Devices { get; }
 
         private GoPlus _selectedDevice;
         public GoPlus SelectedDevice
@@ -70,26 +34,19 @@ namespace suota_pgp
             }
         }
 
-        public DelegateCommand GetDeviceInfoCommand { get; private set; }
-
-        public DelegateCommand RestoreCommand { get; private set; }
-
-        public DelegateCommand SaveCommand { get; private set; }
-
-        public DelegateCommand ScanCommand { get; private set; }
-
-        public DelegateCommand StopScanCommand { get; private set; }
-
-        public DeviceInfoViewModel(IEventAggregator aggregator,
-                                   IBleManager bleService,
+        public DeviceInfoViewModel(IBleManager bleService,
+                                   IEventAggregator eventAggregator,
                                    IExtractorManager extractManager,
                                    IFileManager fileService,
                                    IStateManager stateManager)
         {
-            _aggregator = aggregator;
             _bleManager = bleService;
+            _eventAggregator = eventAggregator;
             _extractManager = extractManager;
             _fileService = fileService;
+
+            StateManager = stateManager;
+            StateManager.PropertyChanged += StateManager_PropertyChanged;
 
             Devices = new ObservableCollection<GoPlus>();
 
@@ -99,20 +56,13 @@ namespace suota_pgp
             ScanCommand = new DelegateCommand(Scan, ScanCanExecute);
             StopScanCommand = new DelegateCommand(StopScan, StopScanCanExecute);
 
-            AppState = stateManager.State;
-            ErrorState = stateManager.ErrorState;
-
-            _aggregator.GetEvent<PrismEvents.AppStateChangedEvent>().Subscribe(OnAppStateChanged, ThreadOption.UIThread);
-            _aggregator.GetEvent<PrismEvents.GoPlusFoundEvent>().Subscribe(OnGoPlusFound, ThreadOption.UIThread);
-            _aggregator.GetEvent<PrismEvents.ErrorStateChangedEvent>().Subscribe(OnErrorStateChanged, ThreadOption.UIThread);
-            _aggregator.GetEvent<PrismEvents.RestoreCompleteEvent>().Subscribe(OnRestoreComplete, ThreadOption.UIThread);
+            _eventAggregator.GetEvent<PrismEvents.GoPlusFoundEvent>().Subscribe(OnGoPlusFound, ThreadOption.UIThread);
+            _eventAggregator.GetEvent<PrismEvents.RestoreCompleteEvent>().Subscribe(OnRestoreComplete, ThreadOption.UIThread);
         }
 
-        private void Clear()
-        {
-            SelectedDevice = null;
-            Devices.Clear();
-        }
+        #region Get Device Info
+
+        public DelegateCommand GetDeviceInfoCommand { get; }
 
         private async void GetDeviceInfo()
         {
@@ -122,11 +72,17 @@ namespace suota_pgp
 
         private bool GetDeviceInfoCanExecute()
         {
-            return AppState == AppState.Idle && 
-                   !ErrorState.HasFlag(ErrorState.BluetoothDisabled) &&
-                   !ErrorState.HasFlag(ErrorState.LocationUnauthorized) &&
+            return StateManager.State == AppState.Idle && 
+                   !StateManager.ErrorState.HasFlag(ErrorState.BluetoothDisabled) &&
+                   !StateManager.ErrorState.HasFlag(ErrorState.LocationUnauthorized) &&
                    SelectedDevice != null;
         }
+
+        #endregion
+
+        #region Save
+
+        public DelegateCommand SaveCommand { get; }
 
         private void Save()
         {
@@ -135,25 +91,36 @@ namespace suota_pgp
 
         private bool SaveCanExecute()
         {
-            return AppState == AppState.Idle &&
-                   !ErrorState.HasFlag(ErrorState.StorageUnauthorized) &&
+            return StateManager.State == AppState.Idle &&
+                   !StateManager.ErrorState.HasFlag(ErrorState.StorageUnauthorized) &&
                    SelectedDevice != null &&
                    SelectedDevice.IsComplete;
         }
 
+        #endregion
+
+        #region Scan
+
+        public DelegateCommand ScanCommand { get; }
+
         private void Scan()
         {
             Clear();
-            IsScanning = true;
             _bleManager.Scan();
         }
 
         private bool ScanCanExecute()
         {
-            return AppState == AppState.Idle &&
-                   !ErrorState.HasFlag(ErrorState.BluetoothDisabled) &&
-                   !ErrorState.HasFlag(ErrorState.LocationUnauthorized);
+            return StateManager.State == AppState.Idle &&
+                   !StateManager.ErrorState.HasFlag(ErrorState.BluetoothDisabled) &&
+                   !StateManager.ErrorState.HasFlag(ErrorState.LocationUnauthorized);
         }
+
+        #endregion
+
+        #region Stop Scan
+
+        public DelegateCommand StopScanCommand { get; }
 
         private void StopScan()
         {
@@ -162,10 +129,16 @@ namespace suota_pgp
 
         private bool StopScanCanExecute()
         {
-            return AppState == AppState.Scanning &&
-                   !ErrorState.HasFlag(ErrorState.BluetoothDisabled) &&
-                   !ErrorState.HasFlag(ErrorState.LocationUnauthorized);
+            return StateManager.State == AppState.Scanning &&
+                   !StateManager.ErrorState.HasFlag(ErrorState.BluetoothDisabled) &&
+                   !StateManager.ErrorState.HasFlag(ErrorState.LocationUnauthorized);
         }
+
+        #endregion
+
+        #region Restore
+
+        public DelegateCommand RestoreCommand { get; }
 
         private void Restore()
         {
@@ -174,27 +147,34 @@ namespace suota_pgp
 
         private bool RestoreCanExecute()
         {
-            return AppState == AppState.Idle &&
-                   !ErrorState.HasFlag(ErrorState.BluetoothDisabled) &&
-                   !ErrorState.HasFlag(ErrorState.LocationUnauthorized) &&
+            return StateManager.State == AppState.Idle &&
+                   !StateManager.ErrorState.HasFlag(ErrorState.BluetoothDisabled) &&
+                   !StateManager.ErrorState.HasFlag(ErrorState.LocationUnauthorized) &&
                    SelectedDevice != null;
+        }
+
+        #endregion
+
+        private void Clear()
+        {
+            SelectedDevice = null;
+            Devices.Clear();
+        }
+
+        private void RefreshCommands()
+        {
+            GetDeviceInfoCommand.RaiseCanExecuteChanged();
+            RestoreCommand.RaiseCanExecuteChanged();
+            SaveCommand.RaiseCanExecuteChanged();
+            ScanCommand.RaiseCanExecuteChanged();
+            StopScanCommand.RaiseCanExecuteChanged();
         }
 
         #region Events
 
-        private void OnAppStateChanged(AppState state)
-        {
-            AppState = state;
-        }
-
-        private void OnErrorStateChanged(ErrorState state)
-        {
-            ErrorState = state;
-        }
-
         private void OnGoPlusFound(GoPlus pgp)
         {
-            if (AppState == AppState.Scanning && pgp != null)
+            if (pgp != null && StateManager.State == AppState.Scanning)
             {
                 Devices.Add(pgp);
             }
@@ -204,6 +184,22 @@ namespace suota_pgp
         {
             Clear();
         }
+
+        private void StateManager_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(IStateManager.State))
+            {
+                RefreshCommands();
+            }
+            else if (e.PropertyName == nameof(IStateManager.ErrorState))
+            {
+                RefreshCommands();
+            }
+        }
+
+        void INavigatedAware.OnNavigatedFrom(INavigationParameters parameters) { }
+
+        void INavigatedAware.OnNavigatedTo(INavigationParameters parameters) { }
 
         #endregion
     }

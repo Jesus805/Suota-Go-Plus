@@ -19,12 +19,12 @@ namespace suota_pgp
         {
             if (bytes == null)
             {
-                throw new ArgumentNullException("bytes");
+                throw new ArgumentNullException(nameof(bytes));
             }
 
             if (bytes.Length != 16)
             {
-                throw new ArgumentException("The byte array must be 16 bytes", "bytes");
+                throw new ArgumentException("The byte array must be 16 bytes", nameof(bytes));
             }
 
             // Convert first three groups to little endian, copy the rest.

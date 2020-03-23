@@ -20,7 +20,7 @@
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition Height="{Binding ErrorState,
+                <RowDefinition Height="{Binding StateManager.ErrorState,
                                         Converter={StaticResource s2gl}}"/>
                 <RowDefinition Height="auto"/>
                 <RowDefinition Height="auto"/>
@@ -30,14 +30,15 @@
                 <RowDefinition />
                 <RowDefinition Height="auto"/>
             </Grid.RowDefinitions>
+            
             <Label x:Name="errorLabel"
                    Grid.Row="0"
                    Grid.Column="0"
                    Grid.ColumnSpan="2"
                    HorizontalOptions="Center"
                    HorizontalTextAlignment="Center"
-                   Text="{Binding ErrorState,
-                         Converter={StaticResource es2s}}"
+                   Text="{Binding StateManager.ErrorState,
+                          Converter={StaticResource es2s}}"
                    Margin="10"/>
 
             <Label Grid.Row="1"
@@ -55,6 +56,7 @@
                     Text="Refresh"
                     Command="{Binding GetPairedPgpCommand}"
                     HorizontalOptions="Center"/>
+            
             <ListView Grid.Row="3"
                       Grid.Column="0"
                       Grid.ColumnSpan="2"
@@ -91,8 +93,8 @@
             <ListView Grid.Row="6"
                       Grid.Column="0"
                       Grid.ColumnSpan="2"
-                      ItemsSource="{Binding FileNames}"
-                      SelectedItem="{Binding SelectedFileName}"
+                      ItemsSource="{Binding PatchFiles}"
+                      SelectedItem="{Binding SelectedPatchFile}"
                       SelectionMode="Single">
                 <ListView.ItemTemplate>
                     <DataTemplate>

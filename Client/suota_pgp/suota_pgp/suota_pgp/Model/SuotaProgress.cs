@@ -3,7 +3,7 @@
     /// <summary>
     /// Represents the progress of a SUOTA process.
     /// </summary>
-    public class Progress
+    public class SuotaProgress
     {
         /// <summary>
         /// Process percentage completed [0-100].
@@ -23,13 +23,13 @@
         /// <summary>
         /// 
         /// </summary>
-        public Progress() { }
+        public SuotaProgress() { }
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="percentage"></param>
-        public Progress(int percentage)
+        public SuotaProgress(int percentage)
         {
             Percentage = percentage;
         }
@@ -38,7 +38,7 @@
         /// 
         /// </summary>
         /// <param name="status"></param>
-        public Progress(string status)
+        public SuotaProgress(string status)
         {
             Status = status;
         }
@@ -48,7 +48,7 @@
         /// </summary>
         /// <param name="percentage"></param>
         /// <param name="status"></param>
-        public Progress(int percentage, string status)
+        public SuotaProgress(int percentage, string status)
         {
             Percentage = percentage;
             Status = status;
@@ -60,7 +60,7 @@
         /// <param name="percentage"></param>
         /// <param name="status"></param>
         /// <param name="isComplete"></param>
-        public Progress(int percentage, string status, bool isComplete)
+        public SuotaProgress(int percentage, string status, bool isComplete)
         {
             Percentage = percentage;
             Status = status;

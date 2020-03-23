@@ -134,17 +134,17 @@ namespace suota_pgp.Droid.Services
             }
 
             _stateManager.State = AppState.Suota;
-            _aggregator.GetEvent<PrismEvents.ProgressUpdateEvent>().Publish(new Progress(_progressPercent++, "Loading Firmware"));
+            _aggregator.GetEvent<PrismEvents.SuotaProgressUpdateEvent>().Publish(new SuotaProgress(_progressPercent++, "Loading Firmware"));
             
             try
             {
                 // Load the file into memory and build blocks.
                 _fileManager.LoadFirmware(fileName);
 
-                _aggregator.GetEvent<PrismEvents.ProgressUpdateEvent>().Publish(new Progress(_progressPercent++, "Connecting to Bonded Go+"));
+                _aggregator.GetEvent<PrismEvents.SuotaProgressUpdateEvent>().Publish(new SuotaProgress(_progressPercent++, "Connecting to Bonded Go+"));
                 await _bleManager.ConnectDevice(device);
 
-                _aggregator.GetEvent<PrismEvents.ProgressUpdateEvent>().Publish(new Progress(_progressPercent++, "Enabling SUOTA on Go+"));
+                _aggregator.GetEvent<PrismEvents.SuotaProgressUpdateEvent>().Publish(new SuotaProgress(_progressPercent++, "Enabling SUOTA on Go+"));
                 _logger.Log("Enabling SUOTA on Go+", Category.Info, Priority.None);
                 await _bleManager.WriteCharacteristic(device,
                                                       Constants.GoPlusUpdateRequestUuid,
@@ -152,7 +152,7 @@ namespace suota_pgp.Droid.Services
 
                 IsSuotaActive = true;
 
-                _aggregator.GetEvent<PrismEvents.ProgressUpdateEvent>().Publish(new Progress(_progressPercent++, "Go+ Automatically disconnected, rescanning"));
+                _aggregator.GetEvent<PrismEvents.SuotaProgressUpdateEvent>().Publish(new SuotaProgress(_progressPercent++, "Go+ Automatically disconnected, rescanning"));
                 _logger.Log("Go+ Automatically disconnected, rescanning", Category.Info, Priority.None);
                 _bleManager.Scan();
             }
@@ -200,7 +200,7 @@ namespace suota_pgp.Droid.Services
             if (CancelRequested)
                 return;
 
-            _aggregator.GetEvent<PrismEvents.ProgressUpdateEvent>().Publish(new Progress(_progressPercent++, "Reconnecting to Go+"));
+            _aggregator.GetEvent<PrismEvents.SuotaProgressUpdateEvent>().Publish(new SuotaProgress(_progressPercent++, "Reconnecting to Go+"));
             _logger.Log("Go+ found!", Category.Info, Priority.None);
             _logger.Log("Attempting to reconnect to Go+", Category.Info, Priority.None);
 
@@ -215,7 +215,7 @@ namespace suota_pgp.Droid.Services
                 // Set MemType
                 int memType = (Constants.SpiMemoryType << 24) | Constants.MemoryBank;
                 _logger.Log($"Setting MemType to 0x{memType.ToString("x2")}", Category.Info, Priority.None);
-                _aggregator.GetEvent<PrismEvents.ProgressUpdateEvent>().Publish(new Progress(_progressPercent++, $"Setting MemType to 0x{memType.ToString("x2")}"));
+                _aggregator.GetEvent<PrismEvents.SuotaProgressUpdateEvent>().Publish(new SuotaProgress(_progressPercent++, $"Setting MemType to 0x{memType.ToString("x2")}"));
                 await _bleManager.WriteCharacteristic(_suotaDevice, Constants.SpotaMemDevUuid, memType);
             }
             catch (Exception)
@@ -239,12 +239,12 @@ namespace suota_pgp.Droid.Services
                 // Set GPIO Map
                 int gpioMap = (Constants.SpiMiso << 24) | (Constants.SpiMosi << 16) |
                               (Constants.SpiCs << 8) | (Constants.SpiSck);
-                _aggregator.GetEvent<PrismEvents.ProgressUpdateEvent>().Publish(new Progress(_progressPercent++, $"Writing 0x{gpioMap.ToString("x2")} to GPIO Characteristic."));
+                _aggregator.GetEvent<PrismEvents.SuotaProgressUpdateEvent>().Publish(new SuotaProgress(_progressPercent++, $"Writing 0x{gpioMap.ToString("x2")} to GPIO Characteristic."));
                 _logger.Log($"Writing 0x{gpioMap.ToString("x2")} to GPIO Characteristic.", Category.Info, Priority.None);
                 await _bleManager.WriteCharacteristic(_suotaDevice,
                                                       Constants.SpotaGpioMapUuid,
                                                       gpioMap);
-                _aggregator.GetEvent<PrismEvents.ProgressUpdateEvent>().Publish(new Progress(_progressPercent++, $"Writing {Constants.BlockSize} to SPOTA patch length"));
+                _aggregator.GetEvent<PrismEvents.SuotaProgressUpdateEvent>().Publish(new SuotaProgress(_progressPercent++, $"Writing {Constants.BlockSize} to SPOTA patch length"));
                 // Set SPOTA Patch Length
                 _logger.Log($"Writing {Constants.BlockSize} to SPOTA patch length", Category.Info, Priority.None);
                 await _bleManager.WriteCharacteristic(_suotaDevice,
@@ -269,7 +269,7 @@ namespace suota_pgp.Droid.Services
 
                         if (finalBlockSize != Constants.BlockSize)
                         {
-                            _aggregator.GetEvent<PrismEvents.ProgressUpdateEvent>().Publish(new Progress(_progressPercent++, $"Writing {finalBlockSize} to SPOTA patch length"));
+                            _aggregator.GetEvent<PrismEvents.SuotaProgressUpdateEvent>().Publish(new SuotaProgress(_progressPercent++, $"Writing {finalBlockSize} to SPOTA patch length"));
                             // Set SPOTA Patch Length with last blocksize
                             _logger.Log($"Writing {finalBlockSize} to SPOTA patch length", Category.Info, Priority.None);
                             await _bleManager.WriteCharacteristic(_suotaDevice,
@@ -278,7 +278,7 @@ namespace suota_pgp.Droid.Services
                         }
                     }
 
-                    _aggregator.GetEvent<PrismEvents.ProgressUpdateEvent>().Publish(new Progress(_progressPercent++, $"Writing block: {i + 1}"));
+                    _aggregator.GetEvent<PrismEvents.SuotaProgressUpdateEvent>().Publish(new SuotaProgress(_progressPercent++, $"Writing block: {i + 1}"));
                     int j = 1;
                     foreach (byte[] chunk in chunks)
                     {
@@ -328,7 +328,7 @@ namespace suota_pgp.Droid.Services
             // Create command
             int memType = (Constants.SpiMemoryType << 24) | address;
 
-            _aggregator.GetEvent<PrismEvents.ProgressUpdateEvent>().Publish(new Progress(_progressPercent++, $"Patching Header: Setting MemType to 0x{memType.ToString("x2")}"));
+            _aggregator.GetEvent<PrismEvents.SuotaProgressUpdateEvent>().Publish(new SuotaProgress(_progressPercent++, $"Patching Header: Setting MemType to 0x{memType.ToString("x2")}"));
             _logger.Log($"Setting MemType to 0x{memType.ToString("x2")}", Category.Info, Priority.None);
             await _bleManager.WriteCharacteristic(_suotaDevice, Constants.SpotaMemDevUuid, memType);
         }
@@ -338,14 +338,14 @@ namespace suota_pgp.Droid.Services
         /// </summary>
         private async void WritePatch()
         {
-            _aggregator.GetEvent<PrismEvents.ProgressUpdateEvent>().Publish(new Progress(_progressPercent++, $"Writing 0x05 to SPOTA patch length"));
+            _aggregator.GetEvent<PrismEvents.SuotaProgressUpdateEvent>().Publish(new SuotaProgress(_progressPercent++, $"Writing 0x05 to SPOTA patch length"));
             // Set SPOTA Patch Length to the header size
             _logger.Log($"Writing {Constants.PatchLength} to SPOTA patch length", Category.Info, Priority.None);
             await _bleManager.WriteCharacteristic(_suotaDevice,
                                                   Constants.SpotaPatchLenUuid,
                                                   (short)Constants.PatchLength);
 
-            _aggregator.GetEvent<PrismEvents.ProgressUpdateEvent>().Publish(new Progress(_progressPercent++, "Patching Valid Flag"));
+            _aggregator.GetEvent<PrismEvents.SuotaProgressUpdateEvent>().Publish(new SuotaProgress(_progressPercent++, "Patching Valid Flag"));
             // Send SPOTA Patch Data
             await _bleManager.WriteCharacteristic(_suotaDevice,
                                                   Constants.SpotaPatchDataUuid,
@@ -356,7 +356,7 @@ namespace suota_pgp.Droid.Services
             // End Image Update
             // Note: The DA14580 reads memory devices and 
             // commands from the same characteristic.
-            _aggregator.GetEvent<PrismEvents.ProgressUpdateEvent>().Publish(new Progress(_progressPercent++, $"Sending Image End command."));
+            _aggregator.GetEvent<PrismEvents.SuotaProgressUpdateEvent>().Publish(new SuotaProgress(_progressPercent++, $"Sending Image End command."));
             _logger.Log($"Sending Image End command.", Category.Info, Priority.None);
             int imgEndCommand = Constants.SpotaImgEnd << 24;
             await _bleManager.WriteCharacteristic(_suotaDevice,
@@ -368,7 +368,7 @@ namespace suota_pgp.Droid.Services
         {
             int memType = (Constants.SpiMemoryType << 24) | Constants.MemoryBank;
             _logger.Log($"Setting MemType to 0x{memType.ToString("x2")}", Category.Info, Priority.None);
-            _aggregator.GetEvent<PrismEvents.ProgressUpdateEvent>().Publish(new Progress(_progressPercent++, $"Setting MemType to 0x{memType.ToString("x2")}"));
+            _aggregator.GetEvent<PrismEvents.SuotaProgressUpdateEvent>().Publish(new SuotaProgress(_progressPercent++, $"Setting MemType to 0x{memType.ToString("x2")}"));
             await _bleManager.WriteCharacteristic(_suotaDevice, Constants.SpotaMemDevUuid, memType);
         }
 
@@ -377,20 +377,20 @@ namespace suota_pgp.Droid.Services
             // Set GPIO Map
             int gpioMap = (Constants.SpiMiso << 24) | (Constants.SpiMosi << 16) |
                           (Constants.SpiCs << 8) | (Constants.SpiSck);
-            _aggregator.GetEvent<PrismEvents.ProgressUpdateEvent>().Publish(new Progress(_progressPercent++, $"Writing 0x{gpioMap.ToString("x2")} to GPIO Characteristic."));
+            _aggregator.GetEvent<PrismEvents.SuotaProgressUpdateEvent>().Publish(new SuotaProgress(_progressPercent++, $"Writing 0x{gpioMap.ToString("x2")} to GPIO Characteristic."));
             _logger.Log($"Writing 0x{gpioMap.ToString("x2")} to GPIO Characteristic.", Category.Info, Priority.None);
             await _bleManager.WriteCharacteristic(_suotaDevice,
                                                   Constants.SpotaGpioMapUuid,
                                                   gpioMap);
 
-            _aggregator.GetEvent<PrismEvents.ProgressUpdateEvent>().Publish(new Progress(_progressPercent++, $"Writing {Constants.HeaderSize} to SPOTA patch length"));
+            _aggregator.GetEvent<PrismEvents.SuotaProgressUpdateEvent>().Publish(new SuotaProgress(_progressPercent++, $"Writing {Constants.HeaderSize} to SPOTA patch length"));
             // Set SPOTA Patch Length
             _logger.Log($"Writing {Constants.HeaderSize} to SPOTA patch length", Category.Info, Priority.None);
             await _bleManager.WriteCharacteristic(_suotaDevice,
                                                   Constants.SpotaPatchLenUuid,
                                                   (short)Constants.HeaderSize);
 
-            _aggregator.GetEvent<PrismEvents.ProgressUpdateEvent>().Publish(new Progress(_progressPercent++, $"Writing Block"));
+            _aggregator.GetEvent<PrismEvents.SuotaProgressUpdateEvent>().Publish(new SuotaProgress(_progressPercent++, $"Writing Block"));
             // Set SPOTA Patch Length
             List<byte[]> chunks = _fileManager.GetHeaderChunks();
             for (int i = 0; i < chunks.Count; i++)
@@ -401,14 +401,14 @@ namespace suota_pgp.Droid.Services
                                                       chunks[i]);
             }
 
-            _aggregator.GetEvent<PrismEvents.ProgressUpdateEvent>().Publish(new Progress(_progressPercent++, $"Unregistering from Service Status Notification"));
+            _aggregator.GetEvent<PrismEvents.SuotaProgressUpdateEvent>().Publish(new SuotaProgress(_progressPercent++, $"Unregistering from Service Status Notification"));
             // Set SPOTA Patch Length
             _logger.Log($"Unregistering from Service Status Notification", Category.Info, Priority.None);
             await _bleManager.NotifyUnregister(_suotaDevice, Constants.SpotaServStatusUuid);
 
             await _bleManager.DisconnectDevice(_suotaDevice);
 
-            _aggregator.GetEvent<PrismEvents.ProgressUpdateEvent>().Publish(new Progress(100, "Successfully wiped out corrupted image."));
+            _aggregator.GetEvent<PrismEvents.SuotaProgressUpdateEvent>().Publish(new SuotaProgress(100, "Successfully wiped out corrupted image."));
             _logger.Log("Successfully wiped out corrupted image.", Category.Info, Priority.None);
         }
 
@@ -459,7 +459,7 @@ namespace suota_pgp.Droid.Services
                         }
                         break;
                     case SpotarStatusUpdate.CrcError:
-                        _aggregator.GetEvent<PrismEvents.ProgressUpdateEvent>().Publish(new Progress(0, "Critical Error: CRC error, reverting changes."));
+                        _aggregator.GetEvent<PrismEvents.SuotaProgressUpdateEvent>().Publish(new SuotaProgress(0, "Critical Error: CRC error, reverting changes."));
                         _logger.Log("CRC Error, attempting to revert back", Category.Info, Priority.None);
                         SuotaFailure = true;
                         RevertStepOne();
@@ -481,7 +481,7 @@ namespace suota_pgp.Droid.Services
                         _bleManager.NotifyUnregister(_suotaDevice, Constants.SpotaServStatusUuid);
                         _bleManager.DisconnectDevice(_suotaDevice);
                         _bleManager.RemoveBond(_suotaDevice);
-                        _aggregator.GetEvent<PrismEvents.ProgressUpdateEvent>().Publish(new Progress(100, "Finished", true));
+                        _aggregator.GetEvent<PrismEvents.SuotaProgressUpdateEvent>().Publish(new SuotaProgress(100, "Finished", true));
                         _notifyManager.ShowDialogInfoBox("Update Complete. Please restart your Pokemon GO Plus if it doesn't show up");
                         ResetState();
                         break;
