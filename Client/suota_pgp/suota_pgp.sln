@@ -10,9 +10,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "suota_pgp.Android", "suota_
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "suota_pgp", "suota_pgp\suota_pgp\suota_pgp.csproj", "{B9373CA3-36BE-49CF-A23D-187B0F734DB1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "suota_pgp.Data", "suota_pgp.Data\suota_pgp.Data.csproj", "{B96E7D33-9CAD-4DF4-971E-739ACA71438E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "suota_pgp.Data", "suota_pgp\suota_pgp.Data\suota_pgp.Data.csproj", "{B96E7D33-9CAD-4DF4-971E-739ACA71438E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "suota_pgp.Services.Interface", "suota_pgp.Services.Interface\suota_pgp.Services.Interface.csproj", "{318F7FCC-589E-42FF-9EEF-9FFDF0466A86}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "suota_pgp.Services.Interface", "suota_pgp\suota_pgp.Services.Interface\suota_pgp.Services.Interface.csproj", "{318F7FCC-589E-42FF-9EEF-9FFDF0466A86}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
