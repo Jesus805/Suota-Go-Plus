@@ -1,6 +1,6 @@
 ﻿using Prism.Mvvm;
 
-namespace suota_pgp.Model
+namespace suota_pgp.Data
 {
     /// <summary>
     /// Pokemon Go Plus model.
@@ -16,11 +16,13 @@ namespace suota_pgp.Model
             get => _name;
             set
             {
-                SetProperty(ref _name, value);
-                RaisePropertyChanged("IsComplete");
+                if (SetProperty(ref _name, value))
+                {
+                    RaisePropertyChanged(nameof(IsComplete));
+                }
             }
         }
-        
+
         /// <summary>
         /// Bluetooth Address.
         /// </summary>
@@ -30,11 +32,13 @@ namespace suota_pgp.Model
             get => _btAddress;
             set
             {
-                SetProperty(ref _btAddress, value);
-                RaisePropertyChanged("IsComplete");
+                if (SetProperty(ref _btAddress, value))
+                {
+                    RaisePropertyChanged(nameof(IsComplete));
+                }
             }
         }
-        
+
         /// <summary>
         /// 16 byte unique device key.
         /// </summary>
@@ -44,11 +48,13 @@ namespace suota_pgp.Model
             get => _deviceKey;
             set
             {
-                SetProperty(ref _deviceKey, value);
-                RaisePropertyChanged("IsComplete");
+                if (SetProperty(ref _deviceKey, value))
+                {
+                    RaisePropertyChanged(nameof(IsComplete));
+                }
             }
         }
-        
+
         /// <summary>
         /// 256 byte unique blob key.
         /// </summary>
@@ -58,11 +64,13 @@ namespace suota_pgp.Model
             get => _blobKey;
             set
             {
-                SetProperty(ref _blobKey, value);
-                RaisePropertyChanged("IsComplete");
+                if (SetProperty(ref _blobKey, value))
+                {
+                    RaisePropertyChanged(nameof(IsComplete));
+                }
             }
         }
-        
+
         /// <summary>
         /// returns true if all fields are filled in; false otherwise.
         /// </summary>

@@ -2,26 +2,20 @@
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:prism="clr-namespace:Prism.Mvvm;assembly=Prism.Forms"
+             xmlns:cvt="clr-namespace:suota_pgp.Converters"
+             xmlns:prop="clr-namespace:suota_pgp.Properties"
              x:Class="suota_pgp.DeviceInfoView"
-             xmlns:local="clr-namespace:suota_pgp"
              prism:ViewModelLocator.AutowireViewModel="True"
-             Title="Key Extractor">
+             Title="{x:Static prop:Resources.KeyExtractorString}">
     <ContentPage.Resources>
-        <ResourceDictionary>
-            <local:AppStateToBoolConverter x:Key="ss2b"/>
-            <local:ErrorStateToGridLengthConverter x:Key="s2gl"/>
-            <local:ErrorStateToStringConverter x:Key="es2s"/>
-        </ResourceDictionary>
+        <cvt:AppStateScanningToBoolConverter x:Key="ss2b"/>
+        <cvt:ErrorStateToStringConverter x:Key="es2s"/>
+        <cvt:ErrorStateToIsVisibleConverter x:Key="es2v"/>
     </ContentPage.Resources>
     <ContentPage.Content>
         <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition />
-                <ColumnDefinition />
-            </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition Height="{Binding ErrorState,
-                                        Converter={StaticResource s2gl}}"/>
+                <RowDefinition Height="auto"/>
                 <RowDefinition Height="auto"/>
                 <RowDefinition Height="auto"/>
                 <RowDefinition />
@@ -30,47 +24,43 @@
                 <RowDefinition />
                 <RowDefinition Height="auto"/>
             </Grid.RowDefinitions>
-            <Label x:Name="errorLabel"
-                   Grid.Row="0"
-                   Grid.Column="0"
-                   Grid.ColumnSpan="2"
+            
+            <!-- Error Label -->
+            <Label Grid.Row="0"
                    HorizontalTextAlignment="Center"
-                   Text="{Binding ErrorState, 
-                         Converter={StaticResource es2s}}"
-                   Margin="10"/>
-            
-            <Label Grid.Row="1"
-                Grid.Column="0"
-                Grid.ColumnSpan="2"
-                Text="Patched Pokemon GO Plus"
-                HorizontalOptions="Center"
-                Margin="10"
-                FontSize="Medium"/>
-            
-            <Button Grid.Row="2"
-                    Grid.Column="0"
-                    Grid.ColumnSpan="2"
-                    Margin="10"
-                    Text="Scan"
-                    Command="{Binding ScanCommand}"
-                    IsVisible="{Binding AppState,
-                                        Converter={StaticResource ss2b},
-                                        ConverterParameter='inverse'}"
-                    HorizontalOptions="Center"/>
-            
-            <Button Grid.Row="2"
-                    Grid.Column="0"
-                    Grid.ColumnSpan="2"
-                    Margin="10"
-                    Text="Stop Scanning"
-                    Command="{Binding StopScanCommand}"
-                    IsVisible="{Binding AppState, 
-                                        Converter={StaticResource ss2b}}"
-                    HorizontalOptions="Center"/>
+                   IsVisible="{Binding StateManager.ErrorState,
+                               Converter={StaticResource es2v}}"
+                   Margin="10"
+                   Text="{Binding StateManager.ErrorState,
+                          Converter={StaticResource es2s}}"/>
 
+            <!-- Description -->
+            <Label Grid.Row="1"
+                   FontSize="Medium"
+                   HorizontalOptions="Center"
+                   Margin="10"
+                   Text="{x:Static prop:Resources.PatchedPokemonGoPlusString}"/>
+            
+            <!-- Start/Stop Scanning Button -->
+            <Button Grid.Row="2"
+                    Command="{Binding ScanCommand}"
+                    HorizontalOptions="Center"                    
+                    IsVisible="{Binding StateManager.AppState,
+                                Converter={StaticResource ss2b},
+                                ConverterParameter='inverse'}"
+                    Margin="10"
+                    Text="{x:Static prop:Resources.ScanString}"/>
+            
+            <Button Grid.Row="2"
+                    Command="{Binding StopScanCommand}"
+                    HorizontalOptions="Center"
+                    IsVisible="{Binding StateManager.AppState,
+                                Converter={StaticResource ss2b}}"
+                    Margin="10"                    
+                    Text="{x:Static prop:Resources.StopScanString}"/>
+
+            <!-- Device List -->
             <ListView Grid.Row="3"
-                      Grid.Column="0"
-                      Grid.ColumnSpan="2"
                       ItemsSource="{Binding Devices}"
                       SelectedItem="{Binding SelectedDevice}">
                 <ListView.ItemTemplate>
@@ -88,21 +78,28 @@
                 </ListView.ItemTemplate>
             </ListView>
 
-            <Button Grid.Row="5"
-                    Grid.Column="0"
-                    Margin="10"
-                    Text="Get Device Info"
-                    Command="{Binding GetDeviceInfoCommand}"/>
-            
-            <Button Grid.Row="5"
-                    Grid.Column="1"
-                    Margin="10"
-                    Text="Restore PGP"
-                    Command="{Binding RestoreCommand}"/>
-            
-            <Grid Grid.Row="6"
-                  Grid.Column="0"
-                  Grid.ColumnSpan="2">
+            <!-- Commands List -->
+            <Grid Grid.Row="5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+
+                <Button Grid.Column="0"
+                        Command="{Binding GetDeviceInfoCommand}"
+                        Margin="10"
+                        HorizontalOptions="Center"
+                        Text="{x:Static prop:Resources.GetDeviceInfoString}"/>
+
+                <Button Grid.Column="1"
+                        Command="{Binding RestoreCommand}"
+                        HorizontalOptions="Center"
+                        Margin="10"
+                        Text="{x:Static prop:Resources.RestorePgpString}"/>
+            </Grid>
+
+            <!-- Device Info -->
+            <Grid Grid.Row="6">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="auto"/>
                     <RowDefinition Height="auto"/>
@@ -114,7 +111,7 @@
                 </Grid.ColumnDefinitions>
                 <Label Grid.Row="0"
                        Grid.Column="0"
-                       Text="Bluetooth Address:"
+                       Text="{x:Static prop:Resources.BluetoothAddressString}"
                        Margin="10,0,0,0"/>
                 
                 <Label Grid.Row="0"
@@ -124,7 +121,7 @@
                 
                 <Label Grid.Row="1"
                        Grid.Column="0"
-                       Text="Device Key:"
+                       Text="{x:Static prop:Resources.DeviceKeyString}"
                        Margin="10,0,0,0"/>
                 
                 <Label Grid.Row="1"
@@ -134,7 +131,7 @@
                 
                 <Label Grid.Row="2"
                        Grid.Column="0"
-                       Text="Blob Key:"
+                       Text="{x:Static prop:Resources.BlobKeyString}"
                        Margin="10,0,0,0"/>
                 
                 <Label Grid.Row="2"
@@ -143,12 +140,11 @@
                        Margin="0,0,10,0"/>
             </Grid>
             
+            <!-- Save Button -->
             <Button Grid.Row="7"
-                    Grid.Column="0"
-                    Grid.ColumnSpan="2"
-                    Text="Save"
                     Command="{Binding SaveCommand}"
-                    HorizontalOptions="Center"/>
+                    HorizontalOptions="Center"
+                    Text="{x:Static prop:Resources.SaveString}"/>
         </Grid>
     </ContentPage.Content>
 </ContentPage>

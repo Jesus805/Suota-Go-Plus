@@ -1,9 +1,9 @@
 ﻿using Prism.Events;
-using suota_pgp.Model;
+using suota_pgp.Data;
 
 namespace suota_pgp
 {
-    public static class PrismEvents
+    public static class AppEvents
     {
         public class CharacteristicUpdatedEvent : PubSubEvent<CharacteristicUpdate> { }
 

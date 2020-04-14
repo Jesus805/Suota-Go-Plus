@@ -1,9 +1,9 @@
-﻿using suota_pgp.Model;
+﻿using suota_pgp.Data;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace suota_pgp.Services
+namespace suota_pgp.Services.Interface
 {
     public interface IBleManager
     {

@@ -1,6 +1,6 @@
-﻿using suota_pgp.Model;
+﻿using suota_pgp.Data;
 
-namespace suota_pgp.Services
+namespace suota_pgp.Services.Interface
 {
     public interface ISuotaManager
     {

@@ -1,4 +1,4 @@
-﻿namespace suota_pgp.Model
+﻿namespace suota_pgp.Data
 {
     public class PermissionState
     {

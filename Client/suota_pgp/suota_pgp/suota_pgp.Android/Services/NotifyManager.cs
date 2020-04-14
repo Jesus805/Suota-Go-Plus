@@ -1,6 +1,7 @@
 ﻿using Android.App;
 using Android.Widget;
 using Plugin.CurrentActivity;
+using suota_pgp.Services.Interface;
 using Xamarin.Forms;
 
 namespace suota_pgp.Droid.Services
@@ -10,7 +11,7 @@ namespace suota_pgp.Droid.Services
         /// <summary>
         /// Current Activity.
         /// </summary>
-        private ICurrentActivity _activity;
+        private readonly ICurrentActivity _activity;
         
         /// <summary>
         /// Initialize a new instance of 'NotificationManager'.

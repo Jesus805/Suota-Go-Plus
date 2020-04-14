@@ -1,8 +1,8 @@
 ﻿using Prism.Commands;
 using Prism.Mvvm;
 using Prism.Navigation;
-using suota_pgp.Model;
-using suota_pgp.Services;
+using suota_pgp.Data;
+using suota_pgp.Services.Interface;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -113,7 +113,7 @@ namespace suota_pgp
 
         private bool CanBeginSuota()
         {
-            return StateManager.State == AppState.Idle &&
+            return StateManager.AppState == AppState.Idle &&
                    StateManager.ErrorState == ErrorState.None &&
                    SelectedDevice != null &&
                    SelectedPatchFile != null &&
@@ -144,7 +144,7 @@ namespace suota_pgp
 
         private bool CanGetPairedPgp()
         {
-            return StateManager.State == AppState.Idle &&
+            return StateManager.AppState == AppState.Idle &&
                    !StateManager.ErrorState.HasFlag(ErrorState.BluetoothDisabled) &&
                    !StateManager.ErrorState.HasFlag(ErrorState.LocationUnauthorized);
         }
@@ -177,7 +177,7 @@ namespace suota_pgp
 
         private bool CanRefreshFirmwares()
         {
-            return StateManager.State == AppState.Idle &&
+            return StateManager.AppState == AppState.Idle &&
                    !StateManager.ErrorState.HasFlag(ErrorState.StorageUnauthorized);
         }
 
@@ -205,7 +205,7 @@ namespace suota_pgp
 
         private void StateManager_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(StateManager.State))
+            if (e.PropertyName == nameof(StateManager.AppState))
             {
                 BeginSuotaCommand.RaiseCanExecuteChanged();
                 GetPairedPgpCommand.RaiseCanExecuteChanged();

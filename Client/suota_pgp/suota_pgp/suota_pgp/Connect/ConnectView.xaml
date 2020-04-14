@@ -2,26 +2,19 @@
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:prism="clr-namespace:Prism.Mvvm;assembly=Prism.Forms"
-             xmlns:local="clr-namespace:suota_pgp"
+             xmlns:cvt="clr-namespace:suota_pgp.Converters"
+             xmlns:prop="clr-namespace:suota_pgp.Properties"
              x:Class="suota_pgp.ConnectView"
              prism:ViewModelLocator.AutowireViewModel="True"
-             Title="Patch Device">
+             Title="{x:Static prop:Resources.PatchDeviceString}">
     <ContentPage.Resources>
-        <ResourceDictionary>
-            <local:AppStateToBoolConverter x:Key="ss2b"/>
-            <local:ErrorStateToGridLengthConverter x:Key="s2gl"/>
-            <local:ErrorStateToStringConverter x:Key="es2s"/>
-        </ResourceDictionary>
+        <cvt:ErrorStateToStringConverter x:Key="es2s"/>
+        <cvt:ErrorStateToIsVisibleConverter x:Key="es2iv"/>
     </ContentPage.Resources>
     <ContentPage.Content>
         <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition />
-                <ColumnDefinition />
-            </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition Height="{Binding StateManager.ErrorState,
-                                        Converter={StaticResource s2gl}}"/>
+                <RowDefinition Height="auto"/>
                 <RowDefinition Height="auto"/>
                 <RowDefinition Height="auto"/>
                 <RowDefinition />
@@ -30,36 +23,31 @@
                 <RowDefinition />
                 <RowDefinition Height="auto"/>
             </Grid.RowDefinitions>
-            
-            <Label x:Name="errorLabel"
-                   Grid.Row="0"
-                   Grid.Column="0"
-                   Grid.ColumnSpan="2"
-                   HorizontalOptions="Center"
-                   HorizontalTextAlignment="Center"
-                   Text="{Binding StateManager.ErrorState,
-                          Converter={StaticResource es2s}}"
-                   Margin="10"/>
 
-            <Label Grid.Row="1"
-                   Grid.Column="0"
-                   Grid.ColumnSpan="2"
-                   Text="Paired Pokemon GO Plus"
+            <!-- Error Label -->
+            <Label Grid.Row="0"
                    HorizontalOptions="Center"
-                   HorizontalTextAlignment="Center"
+                   IsVisible="{Binding ErrorState,
+                               Converter={StaticResource es2iv}}"
                    Margin="10"
-                   FontSize="Medium"/>
-            
+                   Text="{Binding StateManager.ErrorState,
+                          Converter={StaticResource es2s}}"/>
+
+            <!-- Description -->
+            <Label Grid.Row="1"
+                   FontSize="Medium"
+                   HorizontalOptions="Center"
+                   Margin="10"
+                   Text="{x:Static prop:Resources.PairedPokemonGoPlusString}"/>
+
+            <!-- Get paired PGP Button -->
             <Button Grid.Row="2"
-                    Grid.Column="0"
-                    Grid.ColumnSpan="2"
-                    Text="Refresh"
                     Command="{Binding GetPairedPgpCommand}"
-                    HorizontalOptions="Center"/>
-            
+                    HorizontalOptions="Center"
+                    Text="{x:Static prop:Resources.RefreshString}"/>
+
+            <!-- Device List -->
             <ListView Grid.Row="3"
-                      Grid.Column="0"
-                      Grid.ColumnSpan="2"
                       ItemsSource="{Binding Devices}"
                       SelectedItem="{Binding SelectedDevice}"
                       SelectionMode="Single">
@@ -76,23 +64,22 @@
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
+
+            <!-- Description -->
             <Label Grid.Row="4"
-                   Grid.Column="0"
-                   Grid.ColumnSpan="2"
-                   Text="Firmware File"
+                   FontSize="Medium"
                    HorizontalOptions="Center"
                    Margin="10"
-                   FontSize="Medium"/>
+                   Text="{x:Static prop:Resources.FirmwareFileString}"/>
             
+            <!-- Refresh Files Button -->
             <Button Grid.Row="5"
-                    Grid.Column="0"
-                    Grid.ColumnSpan="2"
-                    Text="Refresh"
                     Command="{Binding RefreshFilesCommand}"
-                    HorizontalOptions="Center"/>
+                    HorizontalOptions="Center"
+                    Text="{x:Static prop:Resources.RefreshString}"/>
+
+            <!-- File List -->
             <ListView Grid.Row="6"
-                      Grid.Column="0"
-                      Grid.ColumnSpan="2"
                       ItemsSource="{Binding PatchFiles}"
                       SelectedItem="{Binding SelectedPatchFile}"
                       SelectionMode="Single">
@@ -104,12 +91,12 @@
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
+
+            <!-- Begin SUOTA Button -->
             <Button Grid.Row="7"
-                    Grid.Column="0"
-                    Grid.ColumnSpan="2"
-                    Text="Start Patch"
                     Command="{Binding BeginSuotaCommand}"
-                    HorizontalOptions="Center"/>
+                    HorizontalOptions="Center"
+                    Text="{x:Static prop:Resources.StartPatchString}"/>
         </Grid>
     </ContentPage.Content>
 </ContentPage>

@@ -2,8 +2,9 @@
 <TabbedPage xmlns="http://xamarin.com/schemas/2014/forms"
             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
             xmlns:local="clr-namespace:suota_pgp"
+            xmlns:prop="clr-namespace:suota_pgp.Properties"
             x:Class="suota_pgp.MainPage"
-            Title="Pokemon GO Plus Key Extractor">
+            Title="{x:Static prop:Resources.TitleString}">
     <TabbedPage.Children>
         <local:ConnectView />
         <local:DeviceInfoView />

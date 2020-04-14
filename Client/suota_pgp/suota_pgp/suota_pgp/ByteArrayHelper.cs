@@ -3,7 +3,7 @@ using System.Text;
 
 namespace suota_pgp
 {
-    public static class Helper
+    public static class ByteArrayHelper
     {
         public static string ByteArrayToString(byte[] bytes)
         {

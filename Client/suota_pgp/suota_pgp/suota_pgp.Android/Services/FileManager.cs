@@ -1,11 +1,10 @@
 ﻿using Java.IO;
-using Plugin.CurrentActivity;
 using Prism.Events;
 using Prism.Logging;
 using Prism.Mvvm;
+using suota_pgp.Data;
 using suota_pgp.Droid.Properties;
-using suota_pgp.Model;
-using suota_pgp.Services;
+using suota_pgp.Services.Interface;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -273,10 +272,10 @@ namespace suota_pgp.Droid.Services
         /// <returns>A list of firmware names</returns>
         public async Task<List<PatchFile>> GetFirmwareFileNames()
         {
-            if (_stateManager.State != AppState.Idle)
+            if (_stateManager.AppState != AppState.Idle)
                 return null;
 
-            _stateManager.State = AppState.Loading;
+            _stateManager.AppState = AppState.Loading;
 
             _logger.Log("Attempting to get firmware File names", Category.Info, Priority.None);
 
@@ -310,7 +309,7 @@ namespace suota_pgp.Droid.Services
                 _notifyManager.ShowShortToast("Storage inaccessible. Please make sure that storage permissions are enabled.");
             }
 
-            _stateManager.State = AppState.Idle;
+            _stateManager.AppState = AppState.Idle;
 
             return fileNames;
         }

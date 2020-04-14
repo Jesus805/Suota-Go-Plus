@@ -1,10 +1,11 @@
-﻿using System;
+﻿using suota_pgp.Data;
+using System;
 using System.Globalization;
 using Xamarin.Forms;
 
-namespace suota_pgp
+namespace suota_pgp.Converters
 {
-    public class AppStateToBoolConverter : IValueConverter
+    public class AppStateScanningToBoolConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {

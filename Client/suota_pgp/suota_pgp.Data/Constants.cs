@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace suota_pgp.Model
+namespace suota_pgp.Data
 {
     public static class Constants
     {

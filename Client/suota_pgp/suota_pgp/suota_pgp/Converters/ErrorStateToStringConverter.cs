@@ -1,8 +1,10 @@
-﻿using System;
+﻿using suota_pgp.Data;
+using suota_pgp.Properties;
+using System;
 using System.Globalization;
 using Xamarin.Forms;
 
-namespace suota_pgp
+namespace suota_pgp.Converters
 {
     public class ErrorStateToStringConverter : IValueConverter
     {

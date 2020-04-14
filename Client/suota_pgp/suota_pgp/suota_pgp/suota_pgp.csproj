@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <Version>2.0.0</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -16,10 +17,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\suota_pgp.Data\suota_pgp.Data.csproj" />
+    <ProjectReference Include="..\..\suota_pgp.Services.Interface\suota_pgp.Services.Interface.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Update="DeviceInfo\DeviceInfoView.xaml.cs">
       <DependentUpon>DeviceInfoView.xaml</DependentUpon>
     </Compile>
-    <Compile Update="Resources.Designer.cs">
+    <Compile Update="Properties\Resources.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
@@ -33,7 +39,7 @@
     <EmbeddedResource Update="DeviceInfo\DeviceInfoView.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
-    <EmbeddedResource Update="Resources.resx">
+    <EmbeddedResource Update="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>

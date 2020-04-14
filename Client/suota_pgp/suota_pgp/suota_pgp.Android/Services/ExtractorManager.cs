@@ -1,8 +1,8 @@
 ﻿using Prism.Events;
 using Prism.Logging;
 using Prism.Mvvm;
-using suota_pgp.Model;
-using suota_pgp.Services;
+using suota_pgp.Data;
+using suota_pgp.Services.Interface;
 using System;
 using System.Threading.Tasks;
 
@@ -30,7 +30,7 @@ namespace suota_pgp.Droid.Services
             _notifyManager = notifyManager;
             _stateManager = stateManager;
 
-            _aggregator.GetEvent<PrismEvents.CharacteristicUpdatedEvent>().Subscribe(OnCharacteristicNotify, ThreadOption.UIThread);
+            _aggregator.GetEvent<AppEvents.CharacteristicUpdatedEvent>().Subscribe(OnCharacteristicNotify, ThreadOption.UIThread);
         }
 
         /// <summary>
@@ -44,20 +44,20 @@ namespace suota_pgp.Droid.Services
                 throw new ArgumentNullException("device");
             }
 
-            if (_stateManager.State != AppState.Idle)
+            if (_stateManager.AppState != AppState.Idle)
                 return;
 
             try
             {
-                _stateManager.State = AppState.Getting;
+                _stateManager.AppState = AppState.Getting;
 
                 await _bleManager.ConnectDevice(device);
 
                 byte[] key = await _bleManager.ReadCharacteristic(device, Constants.DeviceKeyCharacteristicUuid);
-                device.DeviceKey = Helper.ByteArrayToString(key);
+                device.DeviceKey = ByteArrayHelper.ByteArrayToString(key);
 
                 byte[] blob = await _bleManager.ReadCharacteristic(device, Constants.BlobKeyCharacteristicUuid);
-                device.BlobKey = Helper.ByteArrayToString(blob);
+                device.BlobKey = ByteArrayHelper.ByteArrayToString(blob);
 
                 await _bleManager.DisconnectDevice(device);
             }
@@ -67,7 +67,7 @@ namespace suota_pgp.Droid.Services
             }
             finally
             {
-                _stateManager.State = AppState.Idle;
+                _stateManager.AppState = AppState.Idle;
             }
         }
 
@@ -80,12 +80,12 @@ namespace suota_pgp.Droid.Services
         {
             _device = device ?? throw new ArgumentNullException("device");
 
-            if (_stateManager.State != AppState.Idle)
+            if (_stateManager.AppState != AppState.Idle)
                 return;
 
             try
             {
-                _stateManager.State = AppState.Restoring;
+                _stateManager.AppState = AppState.Restoring;
 
                 await _bleManager.ConnectDevice(device);
 
@@ -96,7 +96,7 @@ namespace suota_pgp.Droid.Services
             catch (Exception e)
             {
                 _notifyManager.ShowDialogInfoBox($"Unable to restore. Error: {e.Message}");
-                _stateManager.State = AppState.Idle;
+                _stateManager.AppState = AppState.Idle;
             }
         }
 
@@ -106,7 +106,7 @@ namespace suota_pgp.Droid.Services
 
             await _bleManager.DisconnectDevice(_device);
 
-            _stateManager.State = AppState.Idle;
+            _stateManager.AppState = AppState.Idle;
         }
 
         /// <summary>
@@ -129,7 +129,7 @@ namespace suota_pgp.Droid.Services
                 if (value == 1)
                 {
                     _notifyManager.ShowDialogInfoBox("Restore Complete, the device should automatically restart.");
-                    _aggregator.GetEvent<PrismEvents.RestoreCompleteEvent>().Publish();
+                    _aggregator.GetEvent<AppEvents.RestoreCompleteEvent>().Publish();
                 }
                 else
                 {

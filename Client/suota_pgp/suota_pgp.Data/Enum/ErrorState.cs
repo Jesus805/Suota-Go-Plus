@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace suota_pgp
+namespace suota_pgp.Data
 {
     [Flags]
     public enum ErrorState

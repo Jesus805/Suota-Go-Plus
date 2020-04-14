@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace suota_pgp.Model
+namespace suota_pgp.Data
 {
     /// <summary>
     /// Broadcast payload when a characteristic value is updated.

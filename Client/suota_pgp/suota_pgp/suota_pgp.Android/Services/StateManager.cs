@@ -1,7 +1,8 @@
 ﻿using Plugin.BLE.Abstractions.Contracts;
 using Prism.Events;
 using Prism.Mvvm;
-using suota_pgp.Model;
+using suota_pgp.Data;
+using suota_pgp.Services.Interface;
 
 namespace suota_pgp.Droid.Services
 {
@@ -9,42 +10,30 @@ namespace suota_pgp.Droid.Services
     {
         private IEventAggregator _aggregator;
 
-        private AppState _state;
-        public AppState State
+        private AppState _appState;
+        public AppState AppState
         {
-            get => _state;
-            set
-            {
-                if (SetProperty(ref _state, value))
-                {
-                    _aggregator.GetEvent<PrismEvents.AppStateChangedEvent>().Publish(value);
-                }
-            }
+            get => _appState;
+            set => SetProperty(ref _appState, value);
         }
 
         private ErrorState _errorState;
         public ErrorState ErrorState
         {
             get => _errorState;
-            protected set
-            {
-                if (SetProperty(ref _errorState, value))
-                {
-                    _aggregator.GetEvent<PrismEvents.ErrorStateChangedEvent>().Publish(value);
-                }
-            }
+            protected set => SetProperty(ref _errorState, value);
         }
 
         public StateManager(IEventAggregator aggregator)
         {
             _aggregator = aggregator;
             _aggregator.GetEvent<ManagerEvents.BluetoothStateChangedEvent>().Subscribe(OnBluetoothStateChanged, ThreadOption.UIThread);
-            _aggregator.GetEvent<PrismEvents.PermissionStateChangedEvent>().Subscribe(OnPermissionStateChanged, ThreadOption.UIThread);
+            _aggregator.GetEvent<AppEvents.PermissionStateChangedEvent>().Subscribe(OnPermissionStateChanged, ThreadOption.UIThread);
         }
 
         protected void OnAppStateChanged(AppState state)
         {
-            State = state;
+            AppState = state;
         }
 
         protected void OnBluetoothStateChanged(BluetoothState state)

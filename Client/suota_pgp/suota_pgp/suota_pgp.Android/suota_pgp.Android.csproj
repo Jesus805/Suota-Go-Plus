@@ -131,6 +131,14 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
+    <ProjectReference Include="..\..\suota_pgp.Data\suota_pgp.Data.csproj">
+      <Project>{b96e7d33-9cad-4df4-971e-739aca71438e}</Project>
+      <Name>suota_pgp.Data</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\suota_pgp.Services.Interface\suota_pgp.Services.Interface.csproj">
+      <Project>{318f7fcc-589e-42ff-9eef-9ffdf0466a86}</Project>
+      <Name>suota_pgp.Services.Interface</Name>
+    </ProjectReference>
     <ProjectReference Include="..\suota_pgp\suota_pgp.csproj">
       <Project>{C848D1D1-2345-4881-AC89-0A07FFD60682}</Project>
       <Name>suota_pgp</Name>

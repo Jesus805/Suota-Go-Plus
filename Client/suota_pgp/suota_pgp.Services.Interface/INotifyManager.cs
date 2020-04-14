@@ -1,4 +1,4 @@
-﻿namespace suota_pgp
+﻿namespace suota_pgp.Services.Interface
 {
     public interface INotifyManager
     {

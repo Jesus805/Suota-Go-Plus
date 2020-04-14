@@ -2,8 +2,8 @@
 using Prism.Events;
 using Prism.Mvvm;
 using Prism.Navigation;
-using suota_pgp.Model;
-using suota_pgp.Services;
+using suota_pgp.Data;
+using suota_pgp.Services.Interface;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 
@@ -56,8 +56,8 @@ namespace suota_pgp
             ScanCommand = new DelegateCommand(Scan, ScanCanExecute);
             StopScanCommand = new DelegateCommand(StopScan, StopScanCanExecute);
 
-            _eventAggregator.GetEvent<PrismEvents.GoPlusFoundEvent>().Subscribe(OnGoPlusFound, ThreadOption.UIThread);
-            _eventAggregator.GetEvent<PrismEvents.RestoreCompleteEvent>().Subscribe(OnRestoreComplete, ThreadOption.UIThread);
+            _eventAggregator.GetEvent<AppEvents.GoPlusFoundEvent>().Subscribe(OnGoPlusFound, ThreadOption.UIThread);
+            _eventAggregator.GetEvent<AppEvents.RestoreCompleteEvent>().Subscribe(OnRestoreComplete, ThreadOption.UIThread);
         }
 
         #region Get Device Info
@@ -72,7 +72,7 @@ namespace suota_pgp
 
         private bool GetDeviceInfoCanExecute()
         {
-            return StateManager.State == AppState.Idle && 
+            return StateManager.AppState == AppState.Idle && 
                    !StateManager.ErrorState.HasFlag(ErrorState.BluetoothDisabled) &&
                    !StateManager.ErrorState.HasFlag(ErrorState.LocationUnauthorized) &&
                    SelectedDevice != null;
@@ -91,7 +91,7 @@ namespace suota_pgp
 
         private bool SaveCanExecute()
         {
-            return StateManager.State == AppState.Idle &&
+            return StateManager.AppState == AppState.Idle &&
                    !StateManager.ErrorState.HasFlag(ErrorState.StorageUnauthorized) &&
                    SelectedDevice != null &&
                    SelectedDevice.IsComplete;
@@ -111,7 +111,7 @@ namespace suota_pgp
 
         private bool ScanCanExecute()
         {
-            return StateManager.State == AppState.Idle &&
+            return StateManager.AppState == AppState.Idle &&
                    !StateManager.ErrorState.HasFlag(ErrorState.BluetoothDisabled) &&
                    !StateManager.ErrorState.HasFlag(ErrorState.LocationUnauthorized);
         }
@@ -129,7 +129,7 @@ namespace suota_pgp
 
         private bool StopScanCanExecute()
         {
-            return StateManager.State == AppState.Scanning &&
+            return StateManager.AppState == AppState.Scanning &&
                    !StateManager.ErrorState.HasFlag(ErrorState.BluetoothDisabled) &&
                    !StateManager.ErrorState.HasFlag(ErrorState.LocationUnauthorized);
         }
@@ -147,7 +147,7 @@ namespace suota_pgp
 
         private bool RestoreCanExecute()
         {
-            return StateManager.State == AppState.Idle &&
+            return StateManager.AppState == AppState.Idle &&
                    !StateManager.ErrorState.HasFlag(ErrorState.BluetoothDisabled) &&
                    !StateManager.ErrorState.HasFlag(ErrorState.LocationUnauthorized) &&
                    SelectedDevice != null;
@@ -174,7 +174,7 @@ namespace suota_pgp
 
         private void OnGoPlusFound(GoPlus pgp)
         {
-            if (pgp != null && StateManager.State == AppState.Scanning)
+            if (pgp != null && StateManager.AppState == AppState.Scanning)
             {
                 Devices.Add(pgp);
             }
@@ -187,7 +187,7 @@ namespace suota_pgp
 
         private void StateManager_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(IStateManager.State))
+            if (e.PropertyName == nameof(IStateManager.AppState))
             {
                 RefreshCommands();
             }

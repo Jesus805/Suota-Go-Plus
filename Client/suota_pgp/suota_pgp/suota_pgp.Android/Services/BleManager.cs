@@ -1,11 +1,9 @@
-﻿using Plugin.BLE;
-using Plugin.BLE.Abstractions;
+﻿using Plugin.BLE.Abstractions;
 using Plugin.BLE.Abstractions.Contracts;
-using Plugin.CurrentActivity;
 using Prism.Events;
 using Prism.Logging;
-using suota_pgp.Model;
-using suota_pgp.Services;
+using suota_pgp.Data;
+using suota_pgp.Services.Interface;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -102,18 +100,18 @@ namespace suota_pgp.Droid.Services
 
             try
             {
-                if (_stateManager.State != AppState.Idle && 
-                    _stateManager.State != AppState.Suota)
+                if (_stateManager.AppState != AppState.Idle && 
+                    _stateManager.AppState != AppState.Suota)
                     return;
 
                 _logger.Log("Scanning for Go+ Devices.", Category.Info, Priority.None);
-                _stateManager.State = AppState.Scanning;
+                _stateManager.AppState = AppState.Scanning;
                 await _adapter.StartScanningForDevicesAsync();
             }
             catch (Exception e)
             {
                 _logger.Log($"Unable to scan for GO+ Devices. Reason: {e.Message}", Category.Info, Priority.None);
-                _stateManager.State = AppState.Idle;
+                _stateManager.AppState = AppState.Idle;
             }
         }
 
@@ -122,13 +120,13 @@ namespace suota_pgp.Droid.Services
         /// </summary>
         public async void StopScan()
         {
-            if (_stateManager.State != AppState.Scanning)
+            if (_stateManager.AppState != AppState.Scanning)
                 return;
 
             _logger.Log("Stopping scan for GO+ Devices", Category.Info, Priority.None);
             await _adapter.StopScanningForDevicesAsync();
 
-            _stateManager.State = AppState.Idle;
+            _stateManager.AppState = AppState.Idle;
         }
 
         /// <summary>
@@ -352,7 +350,7 @@ namespace suota_pgp.Droid.Services
                     {
                         if (i < Constants.RetryCount - 1)
                         {
-                            _aggregator.GetEvent<PrismEvents.SuotaProgressUpdateEvent>().Publish(new SuotaProgress($"Write to characteristic unsuccessful, trying again."));
+                            _aggregator.GetEvent<AppEvents.SuotaProgressUpdateEvent>().Publish(new SuotaProgress($"Write to characteristic unsuccessful, trying again."));
                             _logger.Log($"Write to characteristic unsuccessful, trying again.", Category.Exception, Priority.High);
                         }
                     }
@@ -360,7 +358,7 @@ namespace suota_pgp.Droid.Services
                 catch (Exception e)
                 {
                     _logger.Log($"Error writing characteristic: {e.Message}. Trying again.", Category.Exception, Priority.High);
-                    _aggregator.GetEvent<PrismEvents.SuotaProgressUpdateEvent>().Publish(new SuotaProgress($"Error writing characteristic: {e.Message}. Trying again."));
+                    _aggregator.GetEvent<AppEvents.SuotaProgressUpdateEvent>().Publish(new SuotaProgress($"Error writing characteristic: {e.Message}. Trying again."));
                 }
                 await Task.Delay(1000);
             }
@@ -424,7 +422,7 @@ namespace suota_pgp.Droid.Services
                         if (i < Constants.RetryCount - 1)
                         {
                             _logger.Log($"Error reading characteristic: {e.Message}. Trying again.", Category.Exception, Priority.High);
-                            _aggregator.GetEvent<PrismEvents.SuotaProgressUpdateEvent>().Publish(new SuotaProgress($"Error reading characteristic: {e.Message}. Trying again."));
+                            _aggregator.GetEvent<AppEvents.SuotaProgressUpdateEvent>().Publish(new SuotaProgress($"Error reading characteristic: {e.Message}. Trying again."));
                             await Task.Delay(1000);
                         }
                     }
@@ -550,10 +548,10 @@ namespace suota_pgp.Droid.Services
         {
             Guid uuid = e.Characteristic.Id;
             byte[] value = e.Characteristic.Value;
-            string valStr = Helper.ByteArrayToString(value);
+            string valStr = ByteArrayHelper.ByteArrayToString(value);
             _logger.Log($"Characteristic updated {uuid}; New value {valStr}", Category.Info, Priority.None);
             var charValue = new CharacteristicUpdate(uuid, value);
-            _aggregator.GetEvent<PrismEvents.CharacteristicUpdatedEvent>().Publish(charValue);
+            _aggregator.GetEvent<AppEvents.CharacteristicUpdatedEvent>().Publish(charValue);
         }
 
         private void _adapter_DeviceDiscovered(object sender, Plugin.BLE.Abstractions.EventArgs.DeviceEventArgs e)
@@ -569,7 +567,7 @@ namespace suota_pgp.Droid.Services
             {
                 if (record.Type == AdvertisementRecordType.UuidsComplete128Bit)
                 {
-                    Guid guid = Helper.ByteArrayToGuid(record.Data);
+                    Guid guid = ByteArrayHelper.ByteArrayToGuid(record.Data);
 
                     if (Constants.ExtractorServiceUuid.Equals(guid) ||
                         Constants.GoPlusServiceUuuid.Equals(guid) ||
@@ -582,7 +580,7 @@ namespace suota_pgp.Droid.Services
                             BtAddress = androidDev.Address
                         };
                         _devicesFound.Add(pgp, device);
-                        _aggregator.GetEvent<PrismEvents.GoPlusFoundEvent>().Publish(pgp);
+                        _aggregator.GetEvent<AppEvents.GoPlusFoundEvent>().Publish(pgp);
                     }
                 }
                 else if (record.Type == AdvertisementRecordType.UuidsComplete16Bit)
@@ -601,7 +599,7 @@ namespace suota_pgp.Droid.Services
                                 BtAddress = androidDev.Address
                             };
                             _devicesFound.Add(pgp, device);
-                            _aggregator.GetEvent<PrismEvents.GoPlusFoundEvent>().Publish(pgp);
+                            _aggregator.GetEvent<AppEvents.GoPlusFoundEvent>().Publish(pgp);
                         }
                     }
                 }
@@ -611,7 +609,7 @@ namespace suota_pgp.Droid.Services
         private void _adapter_ScanTimeoutElapsed(object sender, EventArgs e)
         {
             _logger.Log($"Scanning timeout elapsed.", Category.Info, Priority.None);
-            _stateManager.State = AppState.Idle;
+            _stateManager.AppState = AppState.Idle;
         }
 
         private void _adapter_DeviceConnected(object sender, Plugin.BLE.Abstractions.EventArgs.DeviceEventArgs e)

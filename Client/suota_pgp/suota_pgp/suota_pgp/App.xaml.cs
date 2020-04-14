@@ -3,7 +3,7 @@ using Prism.Events;
 using Prism.Ioc;
 using Prism.Logging;
 using Prism.Unity;
-using suota_pgp.Model;
+using suota_pgp.Data;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
@@ -18,7 +18,7 @@ namespace suota_pgp
         {
             InitializeComponent();
 
-            var result = await NavigationService.NavigateAsync("NavigationPage/MainPage");
+            await NavigationService.NavigateAsync("NavigationPage/MainPage");
         }
 
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
@@ -35,7 +35,7 @@ namespace suota_pgp
         public void SetPermissionState(PermissionState state)
         {
             IEventAggregator aggregator = Container.Resolve<IEventAggregator>();
-            aggregator.GetEvent<PrismEvents.PermissionStateChangedEvent>().Publish(state);
+            aggregator.GetEvent<AppEvents.PermissionStateChangedEvent>().Publish(state);
         }
     }
 }

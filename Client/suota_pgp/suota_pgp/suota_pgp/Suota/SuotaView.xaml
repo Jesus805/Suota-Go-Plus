@@ -1,10 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="suota_pgp.SuotaView"
              xmlns:prism="clr-namespace:Prism.Mvvm;assembly=Prism.Forms"
+             xmlns:prop="clr-namespace:suota_pgp.Properties"
+             x:Class="suota_pgp.SuotaView"
              prism:ViewModelLocator.AutowireViewModel="True"
-             Title="SUOTA in progress">
+             Title="{x:Static prop:Resources.SuotaInProgressString}">
     <ContentPage.Content>
         <Grid>
             <Grid.RowDefinitions>
@@ -13,13 +14,15 @@
                 <RowDefinition />
             </Grid.RowDefinitions>
             <Label Grid.Row="0"
-                   Text="Keep your Pokemon GO Plus near your phone until the update process is complete."
+                   Text="{x:Static prop:Resources.SuotaInProgressDescString}"
                    HorizontalOptions="Center"
                    Margin="10"/>
+
             <ProgressBar Grid.Row="1"
                          Progress="{Binding Progress}"
                          ProgressColor="#1ac6ff"
                          Margin="10"/>
+
             <Editor Grid.Row="2"
                     Text="{Binding ProgressText}"
                     IsSpellCheckEnabled="False"
