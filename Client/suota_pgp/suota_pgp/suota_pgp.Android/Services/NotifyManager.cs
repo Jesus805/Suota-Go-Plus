@@ -1,74 +1,110 @@
 ﻿using Android.App;
 using Android.Widget;
-using Plugin.CurrentActivity;
+using Prism.Ioc;
+using Prism.Services.Dialogs;
+using suota_pgp.Infrastructure;
 using suota_pgp.Services.Interface;
+using System;
 using Xamarin.Forms;
 
 namespace suota_pgp.Droid.Services
 {
     internal class NotifyManager : INotifyManager
     {
-        /// <summary>
-        /// Current Activity.
-        /// </summary>
-        private readonly ICurrentActivity _activity;
-        
+        public readonly IContainerExtension _containerExtension;
+
         /// <summary>
         /// Initialize a new instance of 'NotificationManager'.
         /// </summary>
-        /// <param name="activity">Current Activity.</param>
-        public NotifyManager(ICurrentActivity activity)
+        /// <param name="containerExtension"></param>
+        public NotifyManager(IContainerExtension containerExtension)
         {
-            _activity = activity;
+            _containerExtension = containerExtension;
+        }
+
+        public void ShowDialog(string name, IDialogParameters parameters, Action<IDialogResult> callback)
+        {
+            ShowDialogInternal(name, parameters, callback);
         }
 
         /// <summary>
-        /// Show a long duration toast notification.
+        /// Show a toast notification.
         /// </summary>
-        /// <param name="message">Message to show.</param>
-        public void ShowLongToast(string message)
+        public void ShowToast(string name, IDialogParameters parameters)
         {
-            Device.BeginInvokeOnMainThread(
-            () => Toast.MakeText(_activity.Activity,
-            message, ToastLength.Long).Show());
+            ShowToastInternal(name, parameters);
+        }
+
+        private void ShowDialogInternal(string name, IDialogParameters parameters, Action<IDialogResult> callback)
+        {
+            Activity activity;
+
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                activity = _containerExtension.Resolve<Activity>();
+            }
+            else
+            {
+                activity = _containerExtension.Resolve<Activity>(name);
+            }
+
+            var alertDialog = new AlertDialog.Builder(activity);
+            
+            if (parameters.TryGetValue(DialogParameterKeys.Message, out string message))
+            {
+                alertDialog.SetMessage(message);
+            }
+            else
+            {
+                throw new Exception(Properties.Resources.DialogMessageRequiredString);
+            }
+
+            if (parameters.TryGetValue(DialogParameterKeys.Title, out string title))
+            {
+                alertDialog.SetTitle(title);
+            }
+
+            if (parameters.TryGetValue(DialogParameterKeys.PositiveButtonText, out string positiveText))
+            {
+                alertDialog.SetPositiveButton(positiveText, (sender, e) => { });
+            }
+
+            if (parameters.TryGetValue(DialogParameterKeys.NegativeButtonText, out string negativeText))
+            {
+                alertDialog.SetNegativeButton(negativeText, (sender, e) => { });
+            }
+
+            Device.BeginInvokeOnMainThread(() =>
+            {
+                alertDialog.Show();
+            });
         }
 
         /// <summary>
-        /// Show a short duration toast notification.
+        /// Show a toast notification.
         /// </summary>
-        /// <param name="message">Message to show.</param>
-        public void ShowShortToast(string message)
+        private void ShowToastInternal(string name, IDialogParameters parameters)
         {
-            Device.BeginInvokeOnMainThread(
-            () => Toast.MakeText(_activity.Activity,
-                                 message, ToastLength.Short).Show());
-        }
+            Activity activity;
+            string message = string.Empty;
+            ToastLength length = ToastLength.Short;
 
-        /// <summary>
-        /// Show an information dialog box.
-        /// </summary>
-        /// <param name="message">Message to show.</param>
-        public void ShowDialogInfoBox(string message)
-        {
-            Device.BeginInvokeOnMainThread(
-            () => new AlertDialog.Builder(_activity.Activity)
-                 .SetMessage(message)
-                 .SetPositiveButton("OK", (sender, e) => { })
-                 .Show());
-        }
+            if (string.IsNullOrEmpty(name))
+            {
+                activity = _containerExtension.Resolve<Activity>();
+            }
+            else
+            {
+                activity = _containerExtension.Resolve<Activity>(name);
+            }
 
-        /// <summary>
-        /// Show an error dialog box.
-        /// </summary>
-        /// <param name="message">Message to show.</param>
-        public void ShowDialogErrorBox(string message)
-        {
-            Device.BeginInvokeOnMainThread(
-            () => new AlertDialog.Builder(CrossCurrentActivity.Current.Activity)
-                  .SetMessage(message)
-                  .SetTitle("Error")
-                  .SetPositiveButton("OK", (sender, e) => { })
-                  .Show());
+            parameters.TryGetValue(ToastParameterKeys.Message, out message);
+            parameters.TryGetValue(ToastParameterKeys.Duration, out length);
+
+            Device.BeginInvokeOnMainThread(() =>
+            {
+                Toast.MakeText(Xamarin.Essentials.Platform.AppContext, message, length).Show();
+            });
         }
     }
 }

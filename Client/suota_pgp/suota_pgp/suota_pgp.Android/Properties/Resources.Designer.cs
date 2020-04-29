@@ -22,7 +22,7 @@ namespace suota_pgp.Droid.Properties {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Resources {
+    public class Resources {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -36,7 +36,7 @@ namespace suota_pgp.Droid.Properties {
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
+        public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("suota_pgp.Droid.Properties.Resources", typeof(Resources).Assembly);
@@ -51,7 +51,7 @@ namespace suota_pgp.Droid.Properties {
         ///   resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
+        public static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -63,7 +63,7 @@ namespace suota_pgp.Droid.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Keys.
         /// </summary>
-        internal static string appFileNameString {
+        public static string appFileNameString {
             get {
                 return ResourceManager.GetString("appFileNameString", resourceCulture);
             }
@@ -72,9 +72,522 @@ namespace suota_pgp.Droid.Properties {
         /// <summary>
         ///   Looks up a localized string similar to SuotaPgp.
         /// </summary>
-        internal static string appFolderNameString {
+        public static string appFolderNameString {
             get {
                 return ResourceManager.GetString("appFolderNameString", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Application is not idle..
+        /// </summary>
+        public static string AppNotIdleString {
+            get {
+                return ResourceManager.GetString("AppNotIdleString", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to blob.
+        /// </summary>
+        public static string BlobJsonKey {
+            get {
+                return ResourceManager.GetString("BlobJsonKey", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to bluetooth.
+        /// </summary>
+        public static string BluetoothJsonKey {
+            get {
+                return ResourceManager.GetString("BluetoothJsonKey", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Connecting to Bonded Pokemon GO Plus..
+        /// </summary>
+        public static string ConnectingToBondedGoPlus {
+            get {
+                return ResourceManager.GetString("ConnectingToBondedGoPlus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Critical Error: CRC error, reverting changes..
+        /// </summary>
+        public static string CrcError {
+            get {
+                return ResourceManager.GetString("CrcError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Received Error from device.
+        /// </summary>
+        public static string CriticalErrorTitle {
+            get {
+                return ResourceManager.GetString("CriticalErrorTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to device.
+        /// </summary>
+        public static string DeviceJsonKey {
+            get {
+                return ResourceManager.GetString("DeviceJsonKey", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Dialog message required.
+        /// </summary>
+        public static string DialogMessageRequiredString {
+            get {
+                return ResourceManager.GetString("DialogMessageRequiredString", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enabling SUOTA on Pokemon GO Plus..
+        /// </summary>
+        public static string EnablingSuotaGoPlus {
+            get {
+                return ResourceManager.GetString("EnablingSuotaGoPlus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error reading blob key. {0}. {1} tries left..
+        /// </summary>
+        public static string ErrorReadingBlobKey {
+            get {
+                return ResourceManager.GetString("ErrorReadingBlobKey", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error reading device key. {0}. {1} tries left..
+        /// </summary>
+        public static string ErrorReadingDeviceKey {
+            get {
+                return ResourceManager.GetString("ErrorReadingDeviceKey", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Expected &quot;Invalid image bank&quot; returned from device. Time to write the patch..
+        /// </summary>
+        public static string ExpectedInvalidImageBankError {
+            get {
+                return ResourceManager.GetString("ExpectedInvalidImageBankError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No files found. Please make sure the firmware file is in the &quot;{0}&quot; folder..
+        /// </summary>
+        public static string FilesNotFoundString {
+            get {
+                return ResourceManager.GetString("FilesNotFoundString", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Finished..
+        /// </summary>
+        public static string Finished {
+            get {
+                return ResourceManager.GetString("Finished", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Pokemon GO Plus automatically disconnected, reconnecting..
+        /// </summary>
+        public static string GoPlusDisconnectedReconnecting {
+            get {
+                return ResourceManager.GetString("GoPlusDisconnectedReconnecting", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Internal Memory Error (Not enough space for Patch)..
+        /// </summary>
+        public static string InternalMemoryError {
+            get {
+                return ResourceManager.GetString("InternalMemoryError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &quot;Invalid image bank&quot; error returned from device..
+        /// </summary>
+        public static string InvalidImageBankError {
+            get {
+                return ResourceManager.GetString("InvalidImageBankError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &quot;Invalid Image header&quot; error returned from device. Please ensure your firmware is valid..
+        /// </summary>
+        public static string InvalidImageHeaderError {
+            get {
+                return ResourceManager.GetString("InvalidImageHeaderError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid Image Size returned. Please ensure your firmware is valid..
+        /// </summary>
+        public static string InvalidImageSizeError {
+            get {
+                return ResourceManager.GetString("InvalidImageSizeError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid Product Header returned. There is something wrong with your GO+ as this should never happen..
+        /// </summary>
+        public static string InvalidProductHeaderError {
+            get {
+                return ResourceManager.GetString("InvalidProductHeaderError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Loading Firmware.
+        /// </summary>
+        public static string LoadingFirmware {
+            get {
+                return ResourceManager.GetString("LoadingFirmware", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No paired Pokemon GO Plus found. Please make sure it&apos;s connected via Pokemon GO..
+        /// </summary>
+        public static string NoPairedGoPlusFoundString {
+            get {
+                return ResourceManager.GetString("NoPairedGoPlusFoundString", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to OK.
+        /// </summary>
+        public static string OkString {
+            get {
+                return ResourceManager.GetString("OkString", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Patching valid flag..
+        /// </summary>
+        public static string PatchingValidFlag {
+            get {
+                return ResourceManager.GetString("PatchingValidFlag", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Patch Length Error..
+        /// </summary>
+        public static string PatchLengthError {
+            get {
+                return ResourceManager.GetString("PatchLengthError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error connecting to Pokemon GO Plus. {0}.
+        /// </summary>
+        public static string PgpConnectErrorString {
+            get {
+                return ResourceManager.GetString("PgpConnectErrorString", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Connecting to Pokemon GO Plus..
+        /// </summary>
+        public static string PgpConnectingString {
+            get {
+                return ResourceManager.GetString("PgpConnectingString", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Successfully connected to Pokemon GO Plus..
+        /// </summary>
+        public static string PgpConnectSuccessString {
+            get {
+                return ResourceManager.GetString("PgpConnectSuccessString", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Device found {0} - {1}.
+        /// </summary>
+        public static string PgpDiscovered {
+            get {
+                return ResourceManager.GetString("PgpDiscovered", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Pokemon GO Plus failed integrity check. This isn&apos;t a problem since we patched the image header..
+        /// </summary>
+        public static string PgpFailedIntegrityError {
+            get {
+                return ResourceManager.GetString("PgpFailedIntegrityError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to Connect to Pokemon GO Plus..
+        /// </summary>
+        public static string PgpUnabletoConnectString {
+            get {
+                return ResourceManager.GetString("PgpUnabletoConnectString", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Received &quot;SPOTAR_IMG_STARTED&quot;.
+        /// </summary>
+        public static string ReceivedImgStarted {
+            get {
+                return ResourceManager.GetString("ReceivedImgStarted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Received value {0}.
+        /// </summary>
+        public static string ReceivedNotificationValue {
+            get {
+                return ResourceManager.GetString("ReceivedNotificationValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The device should automatically restart.
+        /// </summary>
+        public static string RestoreCompleteMessageString {
+            get {
+                return ResourceManager.GetString("RestoreCompleteMessageString", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Restore Complete.
+        /// </summary>
+        public static string RestoreCompleteTitleString {
+            get {
+                return ResourceManager.GetString("RestoreCompleteTitleString", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Restore result &quot;{0}&quot;.
+        /// </summary>
+        public static string RestoreResult {
+            get {
+                return ResourceManager.GetString("RestoreResult", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Saved to &quot;{0}&quot;.
+        /// </summary>
+        public static string SavedToString {
+            get {
+                return ResourceManager.GetString("SavedToString", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Scanning for GO+ Devices..
+        /// </summary>
+        public static string ScanStartString {
+            get {
+                return ResourceManager.GetString("ScanStartString", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Stopping scan for GO+ Devices.
+        /// </summary>
+        public static string ScanStopString {
+            get {
+                return ResourceManager.GetString("ScanStopString", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sending Image End command..
+        /// </summary>
+        public static string SendingImageEnd {
+            get {
+                return ResourceManager.GetString("SendingImageEnd", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Setting MemType to 0x{0}.
+        /// </summary>
+        public static string SettingMemType {
+            get {
+                return ResourceManager.GetString("SettingMemType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Listening to SPOTA Service Status Characteristic..
+        /// </summary>
+        public static string SpotaServiceRegister {
+            get {
+                return ResourceManager.GetString("SpotaServiceRegister", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unregistering from SPOTA Service Status. .
+        /// </summary>
+        public static string SpotaServiceUnregister {
+            get {
+                return ResourceManager.GetString("SpotaServiceUnregister", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Storage inaccessible. Please make sure that storage permissions are enabled..
+        /// </summary>
+        public static string StorageInaccessibleString {
+            get {
+                return ResourceManager.GetString("StorageInaccessibleString", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to connect to Pokemon GO Plus..
+        /// </summary>
+        public static string UnableToConnectToPgpString {
+            get {
+                return ResourceManager.GetString("UnableToConnectToPgpString", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to get keys..
+        /// </summary>
+        public static string UnableToGetDeviceInfoString {
+            get {
+                return ResourceManager.GetString("UnableToGetDeviceInfoString", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Returned value: {0}..
+        /// </summary>
+        public static string UnableToRestoreMessageString {
+            get {
+                return ResourceManager.GetString("UnableToRestoreMessageString", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to restore..
+        /// </summary>
+        public static string UnableToRestoreTitleString {
+            get {
+                return ResourceManager.GetString("UnableToRestoreTitleString", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please restart your Pokemon GO Plus if it doesn&apos;t show up..
+        /// </summary>
+        public static string UpdateCompleteMessage {
+            get {
+                return ResourceManager.GetString("UpdateCompleteMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Update Complete..
+        /// </summary>
+        public static string UpdateCompleteTitle {
+            get {
+                return ResourceManager.GetString("UpdateCompleteTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Successfully wiped out corrupted image..
+        /// </summary>
+        public static string WipeSuccessful {
+            get {
+                return ResourceManager.GetString("WipeSuccessful", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Writing block: {0}..
+        /// </summary>
+        public static string WritingBlock {
+            get {
+                return ResourceManager.GetString("WritingBlock", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Writing block: {0} chunk: {1}..
+        /// </summary>
+        public static string WritingChunk {
+            get {
+                return ResourceManager.GetString("WritingChunk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Writing CRC..
+        /// </summary>
+        public static string WritingCrc {
+            get {
+                return ResourceManager.GetString("WritingCrc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Writing 0x{0} to GPIO Characteristic..
+        /// </summary>
+        public static string WritingGpio {
+            get {
+                return ResourceManager.GetString("WritingGpio", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Writing {0} to SPOTA patch length..
+        /// </summary>
+        public static string WritingSpotaPatchLength {
+            get {
+                return ResourceManager.GetString("WritingSpotaPatchLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Writing to file &quot;{0}&quot;..
+        /// </summary>
+        public static string WritingToFileString {
+            get {
+                return ResourceManager.GetString("WritingToFileString", resourceCulture);
             }
         }
     }

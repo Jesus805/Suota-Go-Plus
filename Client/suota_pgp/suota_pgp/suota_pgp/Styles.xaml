@@ -1,0 +1,9 @@
+﻿<ResourceDictionary xmlns="http://xamarin.com/schemas/2014/forms"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+    <Style x:Key="TitleLabel"
+           TargetType="{x:Type Label}"
+           BasedOn="{x:Type Label}">
+        <Setter Property="FontSize" Value="Title"/>
+    </Style>
+
+</ResourceDictionary>

@@ -123,4 +123,175 @@
   <data name="appFolderNameString" xml:space="preserve">
     <value>SuotaPgp</value>
   </data>
+  <data name="AppNotIdleString" xml:space="preserve">
+    <value>Application is not idle.</value>
+  </data>
+  <data name="BlobJsonKey" xml:space="preserve">
+    <value>blob</value>
+  </data>
+  <data name="BluetoothJsonKey" xml:space="preserve">
+    <value>bluetooth</value>
+  </data>
+  <data name="ConnectingToBondedGoPlus" xml:space="preserve">
+    <value>Connecting to Bonded Pokemon GO Plus.</value>
+  </data>
+  <data name="CrcError" xml:space="preserve">
+    <value>Critical Error: CRC error, reverting changes.</value>
+  </data>
+  <data name="CriticalErrorTitle" xml:space="preserve">
+    <value>Received Error from device</value>
+  </data>
+  <data name="DeviceJsonKey" xml:space="preserve">
+    <value>device</value>
+  </data>
+  <data name="DialogMessageRequiredString" xml:space="preserve">
+    <value>Dialog message required</value>
+  </data>
+  <data name="EnablingSuotaGoPlus" xml:space="preserve">
+    <value>Enabling SUOTA on Pokemon GO Plus.</value>
+  </data>
+  <data name="ErrorReadingBlobKey" xml:space="preserve">
+    <value>Error reading blob key. {0}. {1} tries left.</value>
+  </data>
+  <data name="ErrorReadingDeviceKey" xml:space="preserve">
+    <value>Error reading device key. {0}. {1} tries left.</value>
+  </data>
+  <data name="ExpectedInvalidImageBankError" xml:space="preserve">
+    <value>Expected "Invalid image bank" returned from device. Time to write the patch.</value>
+  </data>
+  <data name="FilesNotFoundString" xml:space="preserve">
+    <value>No files found. Please make sure the firmware file is in the "{0}" folder.</value>
+  </data>
+  <data name="Finished" xml:space="preserve">
+    <value>Finished.</value>
+  </data>
+  <data name="GoPlusDisconnectedReconnecting" xml:space="preserve">
+    <value>Pokemon GO Plus automatically disconnected, reconnecting.</value>
+  </data>
+  <data name="InternalMemoryError" xml:space="preserve">
+    <value>Internal Memory Error (Not enough space for Patch).</value>
+  </data>
+  <data name="InvalidImageBankError" xml:space="preserve">
+    <value>"Invalid image bank" error returned from device.</value>
+  </data>
+  <data name="InvalidImageHeaderError" xml:space="preserve">
+    <value>"Invalid Image header" error returned from device. Please ensure your firmware is valid.</value>
+  </data>
+  <data name="InvalidImageSizeError" xml:space="preserve">
+    <value>Invalid Image Size returned. Please ensure your firmware is valid.</value>
+  </data>
+  <data name="InvalidProductHeaderError" xml:space="preserve">
+    <value>Invalid Product Header returned. There is something wrong with your GO+ as this should never happen.</value>
+  </data>
+  <data name="LoadingFirmware" xml:space="preserve">
+    <value>Loading Firmware</value>
+  </data>
+  <data name="NoPairedGoPlusFoundString" xml:space="preserve">
+    <value>No paired Pokemon GO Plus found. Please make sure it's connected via Pokemon GO.</value>
+  </data>
+  <data name="OkString" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="PatchingValidFlag" xml:space="preserve">
+    <value>Patching valid flag.</value>
+  </data>
+  <data name="PatchLengthError" xml:space="preserve">
+    <value>Patch Length Error.</value>
+  </data>
+  <data name="PgpConnectErrorString" xml:space="preserve">
+    <value>Error connecting to Pokemon GO Plus. {0}</value>
+  </data>
+  <data name="PgpConnectingString" xml:space="preserve">
+    <value>Connecting to Pokemon GO Plus.</value>
+  </data>
+  <data name="PgpConnectSuccessString" xml:space="preserve">
+    <value>Successfully connected to Pokemon GO Plus.</value>
+  </data>
+  <data name="PgpDiscovered" xml:space="preserve">
+    <value>Device found {0} - {1}</value>
+  </data>
+  <data name="PgpFailedIntegrityError" xml:space="preserve">
+    <value>Pokemon GO Plus failed integrity check. This isn't a problem since we patched the image header.</value>
+  </data>
+  <data name="PgpUnabletoConnectString" xml:space="preserve">
+    <value>Unable to Connect to Pokemon GO Plus.</value>
+  </data>
+  <data name="ReceivedImgStarted" xml:space="preserve">
+    <value>Received "SPOTAR_IMG_STARTED"</value>
+  </data>
+  <data name="ReceivedNotificationValue" xml:space="preserve">
+    <value>Received value {0}</value>
+  </data>
+  <data name="RestoreCompleteMessageString" xml:space="preserve">
+    <value>The device should automatically restart</value>
+  </data>
+  <data name="RestoreCompleteTitleString" xml:space="preserve">
+    <value>Restore Complete</value>
+  </data>
+  <data name="RestoreResult" xml:space="preserve">
+    <value>Restore result "{0}"</value>
+  </data>
+  <data name="SavedToString" xml:space="preserve">
+    <value>Saved to "{0}"</value>
+  </data>
+  <data name="ScanStartString" xml:space="preserve">
+    <value>Scanning for GO+ Devices.</value>
+  </data>
+  <data name="ScanStopString" xml:space="preserve">
+    <value>Stopping scan for GO+ Devices</value>
+  </data>
+  <data name="SendingImageEnd" xml:space="preserve">
+    <value>Sending Image End command.</value>
+  </data>
+  <data name="SettingMemType" xml:space="preserve">
+    <value>Setting MemType to 0x{0}</value>
+  </data>
+  <data name="SpotaServiceRegister" xml:space="preserve">
+    <value>Listening to SPOTA Service Status Characteristic.</value>
+  </data>
+  <data name="SpotaServiceUnregister" xml:space="preserve">
+    <value>Unregistering from SPOTA Service Status. </value>
+  </data>
+  <data name="StorageInaccessibleString" xml:space="preserve">
+    <value>Storage inaccessible. Please make sure that storage permissions are enabled.</value>
+  </data>
+  <data name="UnableToConnectToPgpString" xml:space="preserve">
+    <value>Unable to connect to Pokemon GO Plus.</value>
+  </data>
+  <data name="UnableToGetDeviceInfoString" xml:space="preserve">
+    <value>Unable to get keys.</value>
+  </data>
+  <data name="UnableToRestoreMessageString" xml:space="preserve">
+    <value>Returned value: {0}.</value>
+  </data>
+  <data name="UnableToRestoreTitleString" xml:space="preserve">
+    <value>Unable to restore.</value>
+  </data>
+  <data name="UpdateCompleteMessage" xml:space="preserve">
+    <value>Please restart your Pokemon GO Plus if it doesn't show up.</value>
+  </data>
+  <data name="UpdateCompleteTitle" xml:space="preserve">
+    <value>Update Complete.</value>
+  </data>
+  <data name="WipeSuccessful" xml:space="preserve">
+    <value>Successfully wiped out corrupted image.</value>
+  </data>
+  <data name="WritingBlock" xml:space="preserve">
+    <value>Writing block: {0}.</value>
+  </data>
+  <data name="WritingChunk" xml:space="preserve">
+    <value>Writing block: {0} chunk: {1}.</value>
+  </data>
+  <data name="WritingCrc" xml:space="preserve">
+    <value>Writing CRC.</value>
+  </data>
+  <data name="WritingGpio" xml:space="preserve">
+    <value>Writing 0x{0} to GPIO Characteristic.</value>
+  </data>
+  <data name="WritingSpotaPatchLength" xml:space="preserve">
+    <value>Writing {0} to SPOTA patch length.</value>
+  </data>
+  <data name="WritingToFileString" xml:space="preserve">
+    <value>Writing to file "{0}".</value>
+  </data>
 </root>

@@ -88,6 +88,15 @@ namespace suota_pgp.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to value must be a(n) {0}..
+        /// </summary>
+        internal static string ConverterValueError {
+            get {
+                return ResourceManager.GetString("ConverterValueError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Device Key:.
         /// </summary>
         internal static string DeviceKeyString {

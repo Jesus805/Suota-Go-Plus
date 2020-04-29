@@ -10,27 +10,22 @@ namespace suota_pgp.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value == null)
+            if (value is ErrorState errorState)
             {
-                return null;
-            }
-
-            if (value is ErrorState state)
-            {
-                if (state.HasFlag(ErrorState.LocationUnauthorized) &&
-                    state.HasFlag(ErrorState.StorageUnauthorized))
+                if (errorState.HasFlag(ErrorState.LocationUnauthorized) &&
+                    errorState.HasFlag(ErrorState.StorageUnauthorized))
                 {
                     return Resources.EnableLocationAndStorageString;
                 }
-                else if (state.HasFlag(ErrorState.StorageUnauthorized))
+                else if (errorState.HasFlag(ErrorState.StorageUnauthorized))
                 {
                     return Resources.EnableStorageString;
                 }
-                else if (state.HasFlag(ErrorState.LocationUnauthorized))
+                else if (errorState.HasFlag(ErrorState.LocationUnauthorized))
                 {
                     return Resources.EnableLocationString;
                 }
-                else if (state.HasFlag(ErrorState.BluetoothDisabled))
+                else if (errorState.HasFlag(ErrorState.BluetoothDisabled))
                 {
                     return Resources.BluetoothDisabledString;
                 }
@@ -39,7 +34,7 @@ namespace suota_pgp.Converters
             }
             else
             {
-                throw new ArgumentException("value must be ErrorState", nameof(value));
+                throw new ArgumentException(string.Format(Resources.ConverterValueError, nameof(ErrorState)), nameof(value));
             }
         }
 

@@ -1,24 +1,38 @@
 ﻿using suota_pgp.Data;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Threading.Tasks;
 
 namespace suota_pgp.Services.Interface
 {
-    public interface IBleManager
+    public interface IBleManager : INotifyPropertyChanged
     {
-        Task ConnectDevice(GoPlus device);
-        Task DisconnectDevice(GoPlus device);
-        List<GoPlus> GetBondedDevices();
-        Task NotifyRegister(GoPlus device, Guid characteristic);
-        Task NotifyUnregister(GoPlus device, Guid characteristic);
-        Task<byte[]> ReadCharacteristic(GoPlus device, Guid characteristic);
+        /// <summary>
+        /// Found GO+ Devices during scan.
+        /// </summary>
+        ObservableCollection<GoPlus> BondedDevices { get; }
+
+        GoPlus SelectedBondedDevice { get; set; }
+
+        /// <summary>
+        /// Found GO+ devices that are patched.
+        /// </summary>
+        ObservableCollection<GoPlus> ScannedDevices { get; }
+
+        GoPlus SelectedScannedDevice { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="deviceGuid"></param>
+        /// <returns></returns>
+        Task<GoPlus> ConnectToKnownDevice(Guid deviceGuid);
+        void Clear();
+        void GetBondedDevices(string name, Guid service);
         void RemoveBond(GoPlus device);
-        void Scan();
+        void Scan(Guid serviceUuid);
         void StopScan();
-        Task WriteCharacteristic(GoPlus device, Guid characteristic, byte value, bool noResponse = false);
-        Task WriteCharacteristic(GoPlus device, Guid characteristic, short value, bool noResponse = false);
-        Task WriteCharacteristic(GoPlus device, Guid characteristic, int value, bool noResponse = false);
-        Task WriteCharacteristic(GoPlus device, Guid characteristic, byte[] value, bool noResponse = false);
     }
 }

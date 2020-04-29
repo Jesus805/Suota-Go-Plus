@@ -7,6 +7,10 @@ namespace suota_pgp.Services.Interface
     {
         AppState AppState { get; set; }
 
-        ErrorState ErrorState { get; }
+        ErrorState ErrorState { get; set; }
+
+        void SetErrorFlag(ErrorState state);
+
+        void ClearErrorFlag(ErrorState state);
     }
 }

@@ -1,9 +1,10 @@
 ﻿using Java.IO;
-using Prism.Events;
 using Prism.Logging;
 using Prism.Mvvm;
+using Prism.Services.Dialogs;
 using suota_pgp.Data;
 using suota_pgp.Droid.Properties;
+using suota_pgp.Infrastructure;
 using suota_pgp.Services.Interface;
 using System;
 using System.Collections.Generic;
@@ -14,10 +15,9 @@ namespace suota_pgp.Droid.Services
 {
     internal class FileManager : BindableBase, IFileManager
     {
-        private IEventAggregator _aggregator;
-        private ILoggerFacade _logger;
-        private INotifyManager _notifyManager;
-        private IStateManager _stateManager;
+        private readonly ILoggerFacade _logger;
+        private readonly INotifyManager _notifyManager;
+        private readonly IStateManager _stateManager;
 
         /// <summary>
         /// Firmware search directory.
@@ -82,14 +82,11 @@ namespace suota_pgp.Droid.Services
         /// <summary>
         /// Initialize a new instance of 'FileManager'.
         /// </summary>
-        /// <param name="aggregator">Prism Dependency Injected IEventAggregator.</param>
         /// <param name="logger">Prism Dependency Injected ILoggerFacade.</param>
-        public FileManager(IEventAggregator aggregator,
-                           ILoggerFacade logger,
+        public FileManager(ILoggerFacade logger,
                            INotifyManager notifyManager,
                            IStateManager stateManager)
         {
-            _aggregator = aggregator;
             _logger = logger;
             _notifyManager = notifyManager;
             _stateManager = stateManager;
@@ -273,7 +270,9 @@ namespace suota_pgp.Droid.Services
         public async Task<List<PatchFile>> GetFirmwareFileNames()
         {
             if (_stateManager.AppState != AppState.Idle)
-                return null;
+            {
+                throw new Exception("The app must be idle before getting firmware files");
+            }
 
             _stateManager.AppState = AppState.Loading;
 
@@ -301,12 +300,18 @@ namespace suota_pgp.Droid.Services
 
                 if (fileNames.Count == 0)
                 {
-                    _notifyManager.ShowShortToast($"No files found. Please make sure the firmware file is in the \'{Resources.appFolderNameString}\' folder.");
+                    DialogParameters dialogParameters = new DialogParameters()
+                    {
+                        { ToastParameterKeys.Message, Resources.FilesNotFoundString },
+                        { ToastParameterKeys.Duration, Android.Widget.ToastLength.Short }
+                    };
+
+                    _notifyManager.ShowToast(null, dialogParameters);
                 }
             }
             else
             {
-                _notifyManager.ShowShortToast("Storage inaccessible. Please make sure that storage permissions are enabled.");
+                //_notifyManager.ShowShortToast("Storage inaccessible. Please make sure that storage permissions are enabled.");
             }
 
             _stateManager.AppState = AppState.Idle;
@@ -352,22 +357,23 @@ namespace suota_pgp.Droid.Services
 
             string json = Serialize(device);
 
-            string fileName = Resources.appFileNameString + " " + device.BtAddress + " " +
+            string fileName = Resources.appFileNameString + " " + device.Address + " " +
                               DateTime.Now.ToString().Replace(':', '-').Replace('/', '-') + 
                               ".json";
 
             try
             {
-                using (System.IO.StreamWriter sw = new System.IO.StreamWriter(_path + "/" + fileName))
+                string fullPath = _path + "/" + fileName;
+                using (System.IO.StreamWriter sw = new System.IO.StreamWriter(fullPath))
                 {
-                    _logger.Log("Writing to file \"" + fileName + "\"", Category.Info, Priority.None);
+                    _logger.Log(string.Format(Resources.WritingToFileString, fileName), Category.Info, Priority.None);
                     await sw.WriteAsync(json);
-                    _notifyManager.ShowShortToast($"Saved to {_path + "/" + fileName}");
+                    //_notifyManager.ShowShortToast($"Saved to path {fullPath}");
                 }
             }
             catch
             {
-                _notifyManager.ShowShortToast("Unable to write key file. Make sure you have storage permissions enabled.");
+                //_notifyManager.ShowShortToast("Unable to write key file. Make sure you have storage permissions enabled.");
                 _logger.Log("Error writing to file \"" + fileName + "\"", Category.Exception, Priority.None);
             }
         }
@@ -382,13 +388,13 @@ namespace suota_pgp.Droid.Services
             // Save as JSON
             StringBuilder sb = new StringBuilder();
             sb.Append("{\n");
-            sb.Append("  \"bluetooth\": \"");
-            sb.Append(device.BtAddress);
+            sb.Append($"  \"{Resources.BluetoothJsonKey}\": \"");
+            sb.Append(device.Address);
             sb.Append("\",\n");
-            sb.Append("  \"device\": \"");
+            sb.Append($"  \"{Resources.DeviceJsonKey}\": \"");
             sb.Append(device.DeviceKey);
             sb.Append("\",\n");
-            sb.Append("  \"blob\": \"");
+            sb.Append($"  \"{Resources.BlobJsonKey}\": \"");
             sb.Append(device.BlobKey);
             sb.Append("\"\n}");
             return sb.ToString();

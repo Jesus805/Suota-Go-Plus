@@ -1,17 +1,14 @@
-﻿using Prism.Navigation;
-using Xamarin.Forms;
+﻿using Xamarin.Forms;
+using Xamarin.Forms.Xaml;
 
 namespace suota_pgp
 {
-    public partial class MainPage : TabbedPage, INavigationAware
+    [XamlCompilation(XamlCompilationOptions.Compile)]
+    public partial class MainPage : TabbedPage
     {
         public MainPage()
         {
             InitializeComponent();
         }
-
-        public void OnNavigatedFrom(INavigationParameters parameters) { }
-
-        public void OnNavigatedTo(INavigationParameters parameters) { }
     }
 }

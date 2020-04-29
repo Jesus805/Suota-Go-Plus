@@ -4,6 +4,19 @@
              xmlns:prism="clr-namespace:Prism.Unity;assembly=Prism.Unity.Forms"
              x:Class="suota_pgp.App">
     <prism:PrismApplication.Resources>
-        <StyleSheet Source="/Resources/styles.css"/>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary>
+                    <Style x:Key="TitleLabel"
+                           TargetType="{x:Type Label}">
+                        <Setter Property="FontSize" Value="Title"/>
+                    </Style>
+
+                    <Style TargetType="{x:Type Button}">
+                        <Setter Property="FontSize" Value="Small"/>
+                    </Style>
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </prism:PrismApplication.Resources>
 </prism:PrismApplication>

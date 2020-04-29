@@ -6,13 +6,25 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "suota_pgp.Android", "suota_pgp\suota_pgp.Android\suota_pgp.Android.csproj", "{79507CA3-BEB1-49F2-A87E-FF900ACB0340}"
 	ProjectSection(ProjectDependencies) = postProject
 		{B9373CA3-36BE-49CF-A23D-187B0F734DB1} = {B9373CA3-36BE-49CF-A23D-187B0F734DB1}
+		{1E3320C1-4EC2-450C-9164-95E968D311CA} = {1E3320C1-4EC2-450C-9164-95E968D311CA}
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "suota_pgp", "suota_pgp\suota_pgp\suota_pgp.csproj", "{B9373CA3-36BE-49CF-A23D-187B0F734DB1}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1E3320C1-4EC2-450C-9164-95E968D311CA} = {1E3320C1-4EC2-450C-9164-95E968D311CA}
+	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "suota_pgp.Data", "suota_pgp\suota_pgp.Data\suota_pgp.Data.csproj", "{B96E7D33-9CAD-4DF4-971E-739ACA71438E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "suota_pgp.Data", "suota_pgp\suota_pgp.Data\suota_pgp.Data.csproj", "{B96E7D33-9CAD-4DF4-971E-739ACA71438E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1E3320C1-4EC2-450C-9164-95E968D311CA} = {1E3320C1-4EC2-450C-9164-95E968D311CA}
+	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "suota_pgp.Services.Interface", "suota_pgp\suota_pgp.Services.Interface\suota_pgp.Services.Interface.csproj", "{318F7FCC-589E-42FF-9EEF-9FFDF0466A86}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "suota_pgp.Services.Interface", "suota_pgp\suota_pgp.Services.Interface\suota_pgp.Services.Interface.csproj", "{318F7FCC-589E-42FF-9EEF-9FFDF0466A86}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1E3320C1-4EC2-450C-9164-95E968D311CA} = {1E3320C1-4EC2-450C-9164-95E968D311CA}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "suota_pgp.Infrastructure", "suota_pgp.Infrastructure\suota_pgp.Infrastructure.csproj", "{1E3320C1-4EC2-450C-9164-95E968D311CA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -38,6 +50,10 @@ Global
 		{318F7FCC-589E-42FF-9EEF-9FFDF0466A86}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{318F7FCC-589E-42FF-9EEF-9FFDF0466A86}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{318F7FCC-589E-42FF-9EEF-9FFDF0466A86}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1E3320C1-4EC2-450C-9164-95E968D311CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E3320C1-4EC2-450C-9164-95E968D311CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E3320C1-4EC2-450C-9164-95E968D311CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E3320C1-4EC2-450C-9164-95E968D311CA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,12 +1,15 @@
-﻿using Plugin.BLE.Abstractions;
+﻿using Java.Lang.Reflect;
 using Plugin.BLE.Abstractions.Contracts;
-using Prism.Events;
+using Plugin.BLE.Abstractions.EventArgs;
 using Prism.Logging;
+using Prism.Mvvm;
+using Prism.Services.Dialogs;
 using suota_pgp.Data;
+using suota_pgp.Infrastructure;
 using suota_pgp.Services.Interface;
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 
 namespace suota_pgp.Droid.Services
@@ -15,98 +18,172 @@ namespace suota_pgp.Droid.Services
     /// Bluetooth Low Energy Manager.
     /// Used to communicate with a Go+.
     /// </summary>
-    internal class BleManager : IBleManager
+    internal class BleManager : BindableBase, IBleManager
     {
-        private IAdapter _adapter;
-        private IBluetoothLE _ble;
-        private IEventAggregator _aggregator;
-        private ILoggerFacade _logger;
-        private INotifyManager _notifyManager;
-        private IStateManager _stateManager;
-        private Dictionary<Guid, ICharacteristic> _charCache;
-        private Dictionary<GoPlus, IDevice> _devicesFound;
-        private List<ICharacteristic> _registeredNotifyChar;
+        private readonly IAdapter _adapter;
+        private readonly IBluetoothLE _ble;
+        private readonly ILoggerFacade _logger;
+        private readonly INotifyManager _notifyManager;
+        private readonly IStateManager _stateManager;
 
         /// <summary>
-        /// Initialize a new instance of 'BleManager'.
+        /// Found GO+ Devices that are bonded.
         /// </summary>
-        /// <param name="aggregator">Prism dependency injected IEventAggregator.</param>
-        public BleManager(IBluetoothLE ble,
-                          IEventAggregator aggregator,
-                          INotifyManager notifyManager,
-                          ILoggerFacade logger,
-                          IStateManager stateManager)
-        {
-            _aggregator = aggregator;
-            _charCache = new Dictionary<Guid, ICharacteristic>();
-            _devicesFound = new Dictionary<GoPlus, IDevice>();
-            _registeredNotifyChar = new List<ICharacteristic>();
-            _ble = ble;
-            _ble.StateChanged += _ble_StateChanged;
-            _adapter = _ble.Adapter;
-            _adapter.ScanMode = ScanMode.Balanced;
-            _adapter.DeviceConnected += _adapter_DeviceConnected;
-            _adapter.DeviceConnectionLost += _adapter_DeviceConnectionLost;
-            _adapter.DeviceDisconnected += _adapter_DeviceDisconnected;
-            _adapter.DeviceDiscovered += _adapter_DeviceDiscovered;
-            _adapter.ScanTimeoutElapsed += _adapter_ScanTimeoutElapsed;
-            _logger = logger;
-            _notifyManager = notifyManager;
-            _stateManager = stateManager;
+        public ObservableCollection<GoPlus> BondedDevices { get; }
 
-            PublishBluetoothState(_ble.State);
+        private GoPlus _selectedBondedDevice;
+        public GoPlus SelectedBondedDevice 
+        {
+            get => _selectedBondedDevice;
+            set => SetProperty(ref _selectedBondedDevice, value);
         }
 
         /// <summary>
-        /// Get Paired or Connected devices.
+        /// Found GO+ devices by scanning.
         /// </summary>
-        /// <returns></returns>
-        public List<GoPlus> GetBondedDevices()
+        public ObservableCollection<GoPlus> ScannedDevices { get; }
+
+        private GoPlus _selectedScannedDevice;
+        public GoPlus SelectedScannedDevice 
+        { 
+            get => _selectedScannedDevice;
+            set => SetProperty(ref _selectedScannedDevice, value);
+        }
+
+        /// <summary>
+        /// Initialize a new instance of <see cref="BleManager"/>.
+        /// </summary>
+        /// <param name="ble"></param>
+        /// <param name="logger"></param>
+        /// <param name="notifyManager"></param>
+        /// <param name="stateManager"></param>
+        public BleManager(IBluetoothLE ble,
+                          ILoggerFacade logger,
+                          INotifyManager notifyManager,
+                          IStateManager stateManager)
         {
-            _devicesFound.Clear();
-            IReadOnlyList<IDevice> devices = _adapter.GetSystemConnectedOrPairedDevices();
-            List<GoPlus> pgpList = new List<GoPlus>();
+            _ble = ble;
+            _ble.StateChanged += Ble_StateChanged;
 
-            foreach (var device in devices)
+            _adapter = _ble.Adapter;
+            _adapter.ScanMode = ScanMode.Balanced;
+            _adapter.DeviceDiscovered += Adapter_DeviceDiscovered;
+            _adapter.ScanTimeoutElapsed += Adapter_ScanTimeoutElapsed;
+
+            _logger = logger;
+            _notifyManager = notifyManager;
+
+            _stateManager = stateManager;
+            _stateManager.PropertyChanged += StateManager_PropertyChanged;
+
+            BondedDevices = new ObservableCollection<GoPlus>();
+            ScannedDevices = new ObservableCollection<GoPlus>();
+
+            UpdateBluetoothState(_ble.State);
+        }
+
+        #region Connect To Known Device
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="deviceGuid"></param>
+        /// <returns></returns>
+        public async Task<GoPlus> ConnectToKnownDevice(Guid deviceGuid)
+        {
+            IDevice device = await _adapter.ConnectToKnownDeviceAsync(deviceGuid);
+            var androidDev = (Android.Bluetooth.BluetoothDevice)device.NativeDevice;
+
+            return new GoPlus(_ble, device, androidDev.Address);
+        }
+
+        #endregion
+
+        #region Bonded Devices
+
+        /// <summary>
+        /// Get Paired devices.
+        /// </summary>
+        /// <param name="name">Device name</param>
+        /// <param name="service">BLE service</param>
+        /// <returns></returns>
+        public void GetBondedDevices(string name, Guid service)
+        {
+            // Reset Bonded Devices
+            BondedDevices.Clear();
+            SelectedBondedDevice = null;
+
+            IReadOnlyList<IDevice> bleDevices = _adapter.GetSystemConnectedOrPairedDevices(new Guid[] { service });
+
+            foreach (var bleDevice in bleDevices)
             {
-                if (device.Name == Constants.GoPlusName)
+                // Verify that the device names match if provided
+                if (string.IsNullOrEmpty(name) || bleDevice.Name == name)
                 {
-                    var androidDev = (Android.Bluetooth.BluetoothDevice)device.NativeDevice;
-                    GoPlus pgp = new GoPlus()
-                    {
-                        Name = androidDev.Name,
-                        BtAddress = androidDev.Address
-                    };
+                    var androidDev = (Android.Bluetooth.BluetoothDevice)bleDevice.NativeDevice;
 
-                    _devicesFound.Add(pgp, device);
-                    pgpList.Add(pgp);
+                    GoPlus pgp = new GoPlus(_ble, bleDevice, androidDev.Address);
+
+                    BondedDevices.Add(pgp);
                 }
             }
 
-            if (pgpList.Count == 0)
+            // No PGP devices found, inform the user.
+            if (BondedDevices.Count == 0)
             {
-                _notifyManager.ShowShortToast("No paired Pokemon GO Plus found. Please make sure it's connected via Pokemon GO.");
+                DialogParameters dialogParameters = new DialogParameters()
+                {
+                    { ToastParameterKeys.Message, Properties.Resources.NoPairedGoPlusFoundString },
+                    { ToastParameterKeys.Duration, Android.Widget.ToastLength.Short }
+                };
+
+                _notifyManager.ShowToast(null, dialogParameters);
+            }
+        }
+
+        /// <summary>
+        /// Remove an existing bond.
+        /// </summary>
+        /// <param name="device">Go+ to unbond.</param>
+        public void RemoveBond(GoPlus device)
+        {
+            if (device == null)
+            {
+                throw new ArgumentNullException(nameof(device));
             }
 
-            return pgpList;
+            try
+            {
+                var androidDev = (Android.Bluetooth.BluetoothDevice)device.Device.NativeDevice;
+
+                Method mi = androidDev.Class.GetMethod("removeBond", null);
+                mi.Invoke(androidDev, null);
+            }
+            catch (Exception e)
+            {
+                _logger.Log($"Unable to removeBond from {device.Name}. {e.Message}", Category.Exception, Priority.High);
+            }
         }
+
+        #endregion
+
+        #region Device Scanning
 
         /// <summary>
         /// Scan for patched Go+ devices.
         /// </summary>
-        public async void Scan()
+        public async void Scan(Guid serviceUuid)
         {
-            _devicesFound.Clear();
+            if (_stateManager.AppState != AppState.Idle)
+            {
+                throw new Exception("");
+            }
 
             try
             {
-                if (_stateManager.AppState != AppState.Idle && 
-                    _stateManager.AppState != AppState.Suota)
-                    return;
-
-                _logger.Log("Scanning for Go+ Devices.", Category.Info, Priority.None);
+                _logger.Log(Properties.Resources.ScanStartString, Category.Info, Priority.None);
                 _stateManager.AppState = AppState.Scanning;
-                await _adapter.StartScanningForDevicesAsync();
+                await _adapter.StartScanningForDevicesAsync(new Guid[] { serviceUuid });
             }
             catch (Exception e)
             {
@@ -121,515 +198,77 @@ namespace suota_pgp.Droid.Services
         public async void StopScan()
         {
             if (_stateManager.AppState != AppState.Scanning)
-                return;
-
-            _logger.Log("Stopping scan for GO+ Devices", Category.Info, Priority.None);
-            await _adapter.StopScanningForDevicesAsync();
-
-            _stateManager.AppState = AppState.Idle;
-        }
-
-        /// <summary>
-        /// Remove an existing bond.
-        /// </summary>
-        /// <param name="device">Go+ to unbond.</param>
-        public void RemoveBond(GoPlus device)
-        {
-            if (device == null)
             {
-                throw new ArgumentNullException(nameof(device));
+                throw new Exception("");
             }
 
-            if (!_devicesFound.ContainsKey(device))
+            try
             {
-                throw new ArgumentException("This device does not exist in discovered devices");
+                _logger.Log(Properties.Resources.ScanStopString, Category.Info, Priority.None);
+                await _adapter.StopScanningForDevicesAsync();
             }
-
-            var androidDev = (Android.Bluetooth.BluetoothDevice) _devicesFound[device].NativeDevice;
-            var mi = androidDev.Class.GetMethod("removeBond", null);
-            mi.Invoke(androidDev, null);
-        }
-
-        /// <summary>
-        /// Connect to a Go+ device.
-        /// </summary>
-        /// <param name="device">Go+ to connect.</param>
-        public async Task ConnectDevice(GoPlus device)
-        {
-            if (device == null)
+            catch (Exception e)
             {
-                throw new ArgumentNullException("device");
+
             }
-
-            if (!_devicesFound.ContainsKey(device))
+            finally
             {
-                throw new ArgumentException("This device does not exist in discovered devices");
-            }
-
-            // There should only be one connection at a time.
-            foreach (IDevice connectedDevice in _adapter.ConnectedDevices)
-            {
-                _logger.Log("Connected device already exists! Disconnecting.", Category.Info, Priority.None);
-                await _adapter.DisconnectDeviceAsync(connectedDevice);
-            }
-
-            _charCache.Clear();
-
-            _logger.Log("Connecting to Pokemon GO Plus.", Category.Info, Priority.None);
-            
-            // Wait a bit before connecting.
-            await Task.Delay(Constants.DelayMS);
-
-            for (int i = 0; i < Constants.RetryCount; i++)
-            {
-                try
-                {
-                    await _adapter.ConnectToDeviceAsync(_devicesFound[device]);
-                    _logger.Log("Successfully connected to Pokemon GO Plus.", Category.Info, Priority.None);
-                    return;
-                }
-                catch (Exception e)
-                {
-                    if (i < Constants.RetryCount - 1)
-                    {
-                        _logger.Log($"Error connecting to Pokemon GO Plus: {e.Message}. Trying Again.", Category.Exception, Priority.High);
-                        await Task.Delay(Constants.DelayMS);
-                    }
-                    else
-                    {
-                        _logger.Log($"Error connecting to Pokemon GO Plus: {e.Message}.", Category.Exception, Priority.High);
-                        _notifyManager.ShowShortToast("Unable to connect to Pokemon GO Plus.");
-                    }
-                }
-            }
-
-            _logger.Log($"Unable to Connect to Pokemon GO Plus.", Category.Exception, Priority.High);
-            throw new Exception("Unable to Connect to Pokemon GO Plus");
-        }
-
-        /// <summary>
-        /// Disconnect from a Go+ device.
-        /// </summary>
-        /// <param name="device">Go+ to disconnect from.</param>
-        public async Task DisconnectDevice(GoPlus device)
-        {
-            if (device == null)
-            {
-                throw new ArgumentNullException("device");
-            }
-
-            if (!_devicesFound.ContainsKey(device))
-            {
-                throw new ArgumentException("This device does not exist in discovered devices");
-            }
-
-            await Task.Delay(Constants.DelayMS);
-
-            // Disconnect the device if connected.
-            if (_adapter.ConnectedDevices.Contains(_devicesFound[device]))
-            {
-                _logger.Log("Disconnecting from Go+ device.", Category.Info, Priority.None);
-                await _adapter.DisconnectDeviceAsync(_devicesFound[device]);
+                _stateManager.AppState = AppState.Idle;
             }
         }
 
-        /// <summary>
-        /// Write to a BLE Characteristic.
-        /// </summary>
-        /// <param name="device"></param>
-        /// <param name="charUuid"></param>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public async Task WriteCharacteristic(GoPlus device, Guid charUuid, byte value, bool noResponse = false)
+        #endregion
+
+        public void Clear()
         {
-            await WriteCharacteristic(device, charUuid, new byte[] { value }, noResponse);
+            BondedDevices.Clear();
+            SelectedBondedDevice = null;
+            ScannedDevices.Clear();
+            SelectedScannedDevice = null;
         }
 
-        /// <summary>
-        /// Write to a BLE Characteristic.
-        /// </summary>
-        /// <param name="device"></param>
-        /// <param name="charUuid"></param>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public async Task WriteCharacteristic(GoPlus device, Guid charUuid, short value, bool noResponse = false)
+        private void UpdateBluetoothState(BluetoothState state)
         {
-            byte[] b = new byte[2];
-            b[0] = (byte)value;
-            b[1] = (byte)(((uint)value >> 8) & 0xFF);
-            await WriteCharacteristic(device, charUuid, b, noResponse);
-        }
-
-        /// <summary>
-        /// Write to a BLE Characteristic.
-        /// </summary>
-        /// <param name="device"></param>
-        /// <param name="charUuid"></param>
-        /// <param name="value"></param>
-        public async Task WriteCharacteristic(GoPlus device, Guid charUuid, int value, bool noResponse = false)
-        {
-            byte[] b = new byte[4];
-            b[0] = (byte)value;
-            b[1] = (byte)(((uint)value >>  8) & 0xFF);
-            b[2] = (byte)(((uint)value >> 16) & 0xFF);
-            b[3] = (byte)(((uint)value >> 24) & 0xFF);
-
-            await WriteCharacteristic(device, charUuid, b, noResponse);
-        }
-
-        /// <summary>
-        /// Write to a BLE Characteristic.
-        /// </summary>
-        /// <param name="device"></param>
-        /// <param name="charUuid"></param>
-        /// <param name="value"></param>
-        public async Task WriteCharacteristic(GoPlus device, Guid charUuid, byte[] value, bool noResponse = false)
-        {
-            if (device == null)
-                throw new ArgumentNullException("device");
-
-            if (charUuid == null)
-                throw new ArgumentNullException("charUuid");
-
-            if (value == null || value.Length == 0)
-                throw new ArgumentNullException("value");
-
-            if (!_devicesFound.ContainsKey(device))
+            if (state == BluetoothState.On)
             {
-                throw new Exception("This device does not exist in discovered devices");
+                _stateManager.ClearErrorFlag(ErrorState.BluetoothDisabled);
             }
-
-            if (value.Length > Constants.ChunkSize)
+            else if (state == BluetoothState.Off)
             {
-                throw new ArgumentException($"Length must be less than {Constants.ChunkSize}", "value");
+                _stateManager.SetErrorFlag(ErrorState.BluetoothDisabled);
             }
-
-            IDevice pgp = _devicesFound[device];
-
-            if (!_adapter.ConnectedDevices.Contains(pgp))
-            {
-                throw new Exception("This device is not connected");
-            }
-
-            // Wait a bit before reading.
-            await Task.Delay(Constants.DelayMS);
-
-            ICharacteristic characteristic;
-
-            if (_charCache.ContainsKey(charUuid))
-            {
-                characteristic = _charCache[charUuid];
-            }
-            else
-            {
-                Guid serviceUuid = Constants.Char2ServiceMap[charUuid];
-
-                IService service = await pgp.GetServiceAsync(serviceUuid);
-
-                characteristic = await service.GetCharacteristicAsync(charUuid);
-
-                _charCache.Add(charUuid, characteristic);
-            }
-
-            if (!characteristic.CanWrite)
-            {
-                throw new Exception("Characteristic is not writable");
-            }
-
-            characteristic.WriteType = (noResponse) ? CharacteristicWriteType.WithoutResponse :
-                                                      CharacteristicWriteType.Default;
-
-            for (int i = 0; i < Constants.RetryCount; i++)
-            {
-                try
-                {
-                    bool success = await characteristic.WriteAsync(value);
-                    if (success)
-                        return;
-                    else
-                    {
-                        if (i < Constants.RetryCount - 1)
-                        {
-                            _aggregator.GetEvent<AppEvents.SuotaProgressUpdateEvent>().Publish(new SuotaProgress($"Write to characteristic unsuccessful, trying again."));
-                            _logger.Log($"Write to characteristic unsuccessful, trying again.", Category.Exception, Priority.High);
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    _logger.Log($"Error writing characteristic: {e.Message}. Trying again.", Category.Exception, Priority.High);
-                    _aggregator.GetEvent<AppEvents.SuotaProgressUpdateEvent>().Publish(new SuotaProgress($"Error writing characteristic: {e.Message}. Trying again."));
-                }
-                await Task.Delay(1000);
-            }
-
-            throw new Exception("Unable to write to characteristic");
-        }
-
-        /// <summary>
-        /// Read a BLE Characteristic.
-        /// </summary>
-        /// <param name="device"></param>
-        /// <param name="charUuid"></param>
-        /// <param name="value"></param>
-        public async Task<byte[]> ReadCharacteristic(GoPlus device, Guid charUuid)
-        {
-            if (device == null)
-                throw new ArgumentNullException("device");
-
-            if (charUuid == null)
-                throw new ArgumentNullException("charUuid");
-
-            if (!_devicesFound.ContainsKey(device))
-                throw new Exception("This device does not exist in discovered devices");
-            
-            IDevice pgp = _devicesFound[device];
-
-            if (!_adapter.ConnectedDevices.Contains(pgp))
-                throw new Exception("This device is not connected");
-
-            ICharacteristic characteristic;
-
-            // Wait a bit before reading.
-            await Task.Delay(Constants.DelayMS);
-
-            if (_charCache.ContainsKey(charUuid))
-            {
-                characteristic = _charCache[charUuid];
-            }
-            else
-            {
-                Guid serviceUuid = Constants.Char2ServiceMap[charUuid];
-
-                IService service = await pgp.GetServiceAsync(serviceUuid);
-
-                characteristic = await service.GetCharacteristicAsync(charUuid);
-
-                _charCache.Add(charUuid, characteristic);
-            }
-
-            if (characteristic.CanRead)
-            {
-                for (int i = 0; i < Constants.RetryCount; i++)
-                {
-                    try
-                    {
-                        byte[] result = await characteristic.ReadAsync();
-                        return result;
-                    }
-                    catch (Exception e)
-                    {
-                        if (i < Constants.RetryCount - 1)
-                        {
-                            _logger.Log($"Error reading characteristic: {e.Message}. Trying again.", Category.Exception, Priority.High);
-                            _aggregator.GetEvent<AppEvents.SuotaProgressUpdateEvent>().Publish(new SuotaProgress($"Error reading characteristic: {e.Message}. Trying again."));
-                            await Task.Delay(1000);
-                        }
-                    }
-                }
-            }
-            else
-            {
-                throw new Exception("Characteristic is not readable");
-            }
-
-            throw new Exception("Unable to read characteristic");
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="device"></param>
-        /// <param name="charUuid"></param>
-        /// <returns></returns>
-        public async Task NotifyRegister(GoPlus device, Guid charUuid)
-        {
-            if (device == null)
-                throw new ArgumentNullException("device");
-
-            if (charUuid == null)
-                throw new ArgumentNullException("charUuid");
-
-            if (!_devicesFound.ContainsKey(device))
-                throw new Exception("This device does not exist in discovered devices");
-
-
-            IDevice pgp = _devicesFound[device];
-
-            if (!_adapter.ConnectedDevices.Contains(pgp))
-                throw new Exception("This device is not connected");
-
-            ICharacteristic characteristic;
-
-            // Wait a delay first
-            await Task.Delay(1000);
-
-            if (_charCache.ContainsKey(charUuid))
-            {
-                characteristic = _charCache[charUuid];
-            }
-            else
-            {
-                Guid serviceUuid = Constants.Char2ServiceMap[charUuid];
-
-                IService service = await pgp.GetServiceAsync(serviceUuid);
-
-                characteristic = await service.GetCharacteristicAsync(charUuid);
-
-                _charCache.Add(charUuid, characteristic);
-            }
-
-            _registeredNotifyChar.Add(characteristic);
-
-            characteristic.ValueUpdated += KeyChar_ValueUpdated;
-
-            await characteristic.StartUpdatesAsync();
-        }
-        
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="device"></param>
-        /// <param name="charUuid"></param>
-        /// <returns></returns>
-        public async Task NotifyUnregister(GoPlus device, Guid charUuid)
-        {
-            if (device == null)
-                throw new ArgumentNullException("device");
-
-            if (charUuid == null)
-                throw new ArgumentNullException("charUuid");
-
-            if (!_devicesFound.ContainsKey(device))
-                throw new Exception("This device does not exist in discovered devices");
-
-            IDevice pgp = _devicesFound[device];
-
-            if (!_adapter.ConnectedDevices.Contains(pgp))
-                throw new Exception("This device is not connected");
-
-            ICharacteristic characteristic;
-
-            // Wait a delay first
-            await Task.Delay(Constants.DelayMS);
-
-            if (_charCache.ContainsKey(charUuid))
-            {
-                characteristic = _charCache[charUuid];
-            }
-            else
-            {
-                Guid serviceUuid = Constants.Char2ServiceMap[charUuid];
-
-                IService service = await pgp.GetServiceAsync(serviceUuid);
-
-                characteristic = await service.GetCharacteristicAsync(charUuid);
-
-                _charCache.Add(charUuid, characteristic);
-            }
-
-            characteristic.ValueUpdated -= KeyChar_ValueUpdated;
-
-            await characteristic.StopUpdatesAsync();
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="state"></param>
-        private void PublishBluetoothState(BluetoothState state)
-        {
-            _aggregator.GetEvent<ManagerEvents.BluetoothStateChangedEvent>().Publish(state);
         }
 
         #region Events
 
-        private void KeyChar_ValueUpdated(object sender, Plugin.BLE.Abstractions.EventArgs.CharacteristicUpdatedEventArgs e)
-        {
-            Guid uuid = e.Characteristic.Id;
-            byte[] value = e.Characteristic.Value;
-            string valStr = ByteArrayHelper.ByteArrayToString(value);
-            _logger.Log($"Characteristic updated {uuid}; New value {valStr}", Category.Info, Priority.None);
-            var charValue = new CharacteristicUpdate(uuid, value);
-            _aggregator.GetEvent<AppEvents.CharacteristicUpdatedEvent>().Publish(charValue);
-        }
-
-        private void _adapter_DeviceDiscovered(object sender, Plugin.BLE.Abstractions.EventArgs.DeviceEventArgs e)
+        private void Adapter_DeviceDiscovered(object sender, DeviceEventArgs e)
         {
             IDevice device = e.Device;
             var androidDev = (Android.Bluetooth.BluetoothDevice)device.NativeDevice;
 
-            string name = string.IsNullOrWhiteSpace(androidDev.Name) ? "<No Name>" : androidDev.Name;
-
-            _logger.Log($"Device discovered. Name: {name} Address: {androidDev.Address}", Category.Debug, Priority.None);
-
-            foreach (var record in device.AdvertisementRecords)
-            {
-                if (record.Type == AdvertisementRecordType.UuidsComplete128Bit)
-                {
-                    Guid guid = ByteArrayHelper.ByteArrayToGuid(record.Data);
-
-                    if (Constants.ExtractorServiceUuid.Equals(guid) ||
-                        Constants.GoPlusServiceUuuid.Equals(guid) ||
-                        Constants.SpotaServiceUuid.Equals(guid))
-                    {
-                        _logger.Log($"GO Plus Discovered!", Category.Info, Priority.None);
-                        GoPlus pgp = new GoPlus()
-                        {
-                            Name = androidDev.Name,
-                            BtAddress = androidDev.Address
-                        };
-                        _devicesFound.Add(pgp, device);
-                        _aggregator.GetEvent<AppEvents.GoPlusFoundEvent>().Publish(pgp);
-                    }
-                }
-                else if (record.Type == AdvertisementRecordType.UuidsComplete16Bit)
-                {
-                    if (string.Compare(Constants.GoPlusName, androidDev.Name) == 0)
-                    {
-                        if (record.Data != null &&
-                            record.Data.Length > 1 && 
-                            record.Data[0] == Constants.SuotaAdvertisementUuid[0] &&
-                            record.Data[1] == Constants.SuotaAdvertisementUuid[1])
-                        {
-                            _logger.Log($"GO Plus SUOTA Discovered!", Category.Info, Priority.None);
-                            GoPlus pgp = new GoPlus()
-                            {
-                                Name = androidDev.Name,
-                                BtAddress = androidDev.Address
-                            };
-                            _devicesFound.Add(pgp, device);
-                            _aggregator.GetEvent<AppEvents.GoPlusFoundEvent>().Publish(pgp);
-                        }
-                    }
-                }
-            } 
+            ScannedDevices.Add(new GoPlus(_ble, device, androidDev.Address));
         }
 
-        private void _adapter_ScanTimeoutElapsed(object sender, EventArgs e)
+        private void Adapter_ScanTimeoutElapsed(object sender, EventArgs e)
         {
             _logger.Log($"Scanning timeout elapsed.", Category.Info, Priority.None);
             _stateManager.AppState = AppState.Idle;
         }
 
-        private void _adapter_DeviceConnected(object sender, Plugin.BLE.Abstractions.EventArgs.DeviceEventArgs e)
+        private void Ble_StateChanged(object sender, BluetoothStateChangedArgs e)
         {
-            _logger.Log($"Connected to {e.Device.Name}", Category.Info, Priority.None);
+            UpdateBluetoothState(e.NewState);
         }
 
-        private void _adapter_DeviceDisconnected(object sender, Plugin.BLE.Abstractions.EventArgs.DeviceEventArgs e)
+        private void StateManager_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            _logger.Log($"Disconnected from {e.Device.Name}", Category.Info, Priority.None);
-        }
-
-        private void _adapter_DeviceConnectionLost(object sender, Plugin.BLE.Abstractions.EventArgs.DeviceErrorEventArgs e)
-        {
-            _logger.Log($"Connection lost from {e.Device.Name}", Category.Info, Priority.None);
-        }
-
-        private void _ble_StateChanged(object sender, Plugin.BLE.Abstractions.EventArgs.BluetoothStateChangedArgs e)
-        {
-            PublishBluetoothState(e.NewState);
+            if (e.PropertyName == nameof(IStateManager.ErrorState))
+            {
+                if (_stateManager.ErrorState != ErrorState.None)
+                {
+                    Clear();
+                }
+            }
         }
 
         #endregion

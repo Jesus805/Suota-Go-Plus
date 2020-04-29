@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 
-namespace suota_pgp
+namespace suota_pgp.Infrastructure
 {
     public static class ByteArrayHelper
     {

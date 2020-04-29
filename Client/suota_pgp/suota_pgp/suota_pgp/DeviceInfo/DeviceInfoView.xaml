@@ -1,150 +1,111 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:prism="clr-namespace:Prism.Mvvm;assembly=Prism.Forms"
              xmlns:cvt="clr-namespace:suota_pgp.Converters"
+             xmlns:model="clr-namespace:suota_pgp.Data;assembly=suota_pgp.Data"
              xmlns:prop="clr-namespace:suota_pgp.Properties"
              x:Class="suota_pgp.DeviceInfoView"
-             prism:ViewModelLocator.AutowireViewModel="True"
              Title="{x:Static prop:Resources.KeyExtractorString}">
     <ContentPage.Resources>
         <cvt:AppStateScanningToBoolConverter x:Key="ss2b"/>
-        <cvt:ErrorStateToStringConverter x:Key="es2s"/>
-        <cvt:ErrorStateToIsVisibleConverter x:Key="es2v"/>
     </ContentPage.Resources>
     <ContentPage.Content>
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="auto"/>
-                <RowDefinition Height="auto"/>
-                <RowDefinition Height="auto"/>
-                <RowDefinition />
-                <RowDefinition Height="auto"/>
-                <RowDefinition Height="auto"/>
-                <RowDefinition />
-                <RowDefinition Height="auto"/>
-            </Grid.RowDefinitions>
-            
-            <!-- Error Label -->
-            <Label Grid.Row="0"
-                   HorizontalTextAlignment="Center"
-                   IsVisible="{Binding StateManager.ErrorState,
-                               Converter={StaticResource es2v}}"
-                   Margin="10"
-                   Text="{Binding StateManager.ErrorState,
-                          Converter={StaticResource es2s}}"/>
+        <StackLayout Orientation="Vertical"
+                     Margin="10"
+                     Spacing="10">
 
             <!-- Description -->
-            <Label Grid.Row="1"
-                   FontSize="Medium"
-                   HorizontalOptions="Center"
-                   Margin="10"
-                   Text="{x:Static prop:Resources.PatchedPokemonGoPlusString}"/>
+            <Label HorizontalOptions="Center"
+                   Text="{x:Static prop:Resources.PatchedPokemonGoPlusString}"
+                   Style="{StaticResource TitleLabel}"/>
             
             <!-- Start/Stop Scanning Button -->
-            <Button Grid.Row="2"
-                    Command="{Binding ScanCommand}"
+            <Button Command="{Binding ScanCommand}"
                     HorizontalOptions="Center"                    
                     IsVisible="{Binding StateManager.AppState,
                                 Converter={StaticResource ss2b},
                                 ConverterParameter='inverse'}"
-                    Margin="10"
-                    Text="{x:Static prop:Resources.ScanString}"/>
+                    Text="{x:Static prop:Resources.ScanString}"
+                    WidthRequest="125"/>
             
-            <Button Grid.Row="2"
-                    Command="{Binding StopScanCommand}"
+            <Button Command="{Binding StopScanCommand}"
                     HorizontalOptions="Center"
                     IsVisible="{Binding StateManager.AppState,
                                 Converter={StaticResource ss2b}}"
-                    Margin="10"                    
-                    Text="{x:Static prop:Resources.StopScanString}"/>
+                    Text="{x:Static prop:Resources.StopScanString}"
+                    WidthRequest="125"/>
 
             <!-- Device List -->
-            <ListView Grid.Row="3"
-                      ItemsSource="{Binding Devices}"
-                      SelectedItem="{Binding SelectedDevice}">
+            <ListView ItemsSource="{Binding BleManager.ScannedDevices}"
+                      SelectedItem="{Binding BleManager.SelectedScannedDevice}"
+                      VerticalOptions="FillAndExpand">
                 <ListView.ItemTemplate>
-                    <DataTemplate>
+                    <DataTemplate x:DataType="{x:Type model:GoPlus}">
                         <ViewCell>
-                            <StackLayout Orientation="Horizontal"
-                                         HorizontalOptions="Center"
-                                         VerticalOptions="Center">
-                                <Label Text="{Binding Name}"/>
-                                <Label Text=" - "/>
-                                <Label Text="{Binding BtAddress}"/>
-                            </StackLayout>
+                            <Label Text="{Binding Display}"/>
                         </ViewCell>
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
 
             <!-- Commands List -->
-            <Grid Grid.Row="5">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-
+            <StackLayout Orientation="Horizontal">
                 <Button Grid.Column="0"
                         Command="{Binding GetDeviceInfoCommand}"
-                        Margin="10"
-                        HorizontalOptions="Center"
-                        Text="{x:Static prop:Resources.GetDeviceInfoString}"/>
+                        HorizontalOptions="CenterAndExpand"
+                        Text="{x:Static prop:Resources.GetDeviceInfoString}"
+                        WidthRequest="150"/>
 
                 <Button Grid.Column="1"
                         Command="{Binding RestoreCommand}"
-                        HorizontalOptions="Center"
-                        Margin="10"
-                        Text="{x:Static prop:Resources.RestorePgpString}"/>
-            </Grid>
+                        HorizontalOptions="CenterAndExpand"
+                        Text="{x:Static prop:Resources.RestorePgpString}"
+                        WidthRequest="150"/>
+            </StackLayout>
 
             <!-- Device Info -->
-            <Grid Grid.Row="6">
+            <Grid VerticalOptions="FillAndExpand"
+                  ColumnSpacing="5"
+                  RowSpacing="5">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="auto"/>
                     <RowDefinition Height="auto"/>
-                    <RowDefinition />
+                    <RowDefinition Height="auto"/>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="auto"/>
-                    <ColumnDefinition />
+                    <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 <Label Grid.Row="0"
                        Grid.Column="0"
-                       Text="{x:Static prop:Resources.BluetoothAddressString}"
-                       Margin="10,0,0,0"/>
+                       Text="{x:Static prop:Resources.BluetoothAddressString}"/>
                 
                 <Label Grid.Row="0"
                        Grid.Column="1"
-                       Text="{Binding SelectedDevice.BtAddress}"
-                       Margin="0,0,10,0"/>
+                       Text="{Binding BleManager.SelectedScannedDevice.BtAddress}"/>
                 
                 <Label Grid.Row="1"
                        Grid.Column="0"
-                       Text="{x:Static prop:Resources.DeviceKeyString}"
-                       Margin="10,0,0,0"/>
+                       Text="{x:Static prop:Resources.DeviceKeyString}"/>
                 
                 <Label Grid.Row="1"
                        Grid.Column="1"
-                       Text="{Binding SelectedDevice.DeviceKey}"
-                       Margin="0,0,10,0"/>
+                       Text="{Binding BleManager.SelectedScannedDevice.DeviceKey}"/>
                 
                 <Label Grid.Row="2"
                        Grid.Column="0"
-                       Text="{x:Static prop:Resources.BlobKeyString}"
-                       Margin="10,0,0,0"/>
+                       Text="{x:Static prop:Resources.BlobKeyString}"/>
                 
                 <Label Grid.Row="2"
                        Grid.Column="1"
-                       Text="{Binding SelectedDevice.BlobKey}"
-                       Margin="0,0,10,0"/>
+                       Text="{Binding BleManager.SelectedScannedDevice.BlobKey}"/>
             </Grid>
             
             <!-- Save Button -->
-            <Button Grid.Row="7"
-                    Command="{Binding SaveCommand}"
+            <Button Command="{Binding SaveCommand}"
                     HorizontalOptions="Center"
-                    Text="{x:Static prop:Resources.SaveString}"/>
-        </Grid>
+                    Text="{x:Static prop:Resources.SaveString}"
+                    WidthRequest="125"/>
+        </StackLayout>
     </ContentPage.Content>
 </ContentPage>

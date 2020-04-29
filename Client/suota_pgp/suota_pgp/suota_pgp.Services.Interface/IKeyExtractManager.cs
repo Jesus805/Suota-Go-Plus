@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace suota_pgp.Services.Interface
 {
-    public interface IExtractorManager
+    public interface IKeyExtractManager
     {
         Task GetDeviceInfo(GoPlus device);
         Task RestoreDevice(GoPlus device);
