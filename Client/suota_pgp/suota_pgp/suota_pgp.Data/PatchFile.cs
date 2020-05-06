@@ -14,12 +14,38 @@ namespace suota_pgp.Data
             set => SetProperty(ref _name, value);
         }
 
-        private string[] _content;
-        public string[] Content { get; }
+        /// <summary>
+        /// Contents of the firmware file.
+        /// </summary>
+        private byte[] _firmware;
 
         public PatchFile()
         {
 
         }
+
+        /*
+        /// <summary>
+        /// Calculate firmware CRC. 
+        /// </summary>
+        /// <param name="firmware">Contents of the firmware file.</param>
+        private void CalculateCRC()
+        {
+            byte crc = 0;
+
+            for (int i = 0; i < _firmware.Length; i++)
+            {
+                crc ^= _firmware[i];
+            }
+
+            // Add ValidFlag to CRC calculation.
+            for (int i = 0; i < Constants.PatchLength; i++)
+            {
+                crc ^= Patch[i];
+            }
+
+            Crc = crc;
+        }
+        */
     }
 }

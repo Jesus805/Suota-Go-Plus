@@ -17,11 +17,12 @@ namespace suota_pgp
     /// </summary>
     public class ConnectViewModel : BindableBase
     {
-        private readonly IFileManager _fileManager;
         private readonly INavigationService _navigationService;
         private readonly ISuotaManager _suotaManager;
 
         public IBleManager BleManager { get; }
+
+        public IFileManager FileManager { get; }
 
         public IStateManager StateManager { get; }
 
@@ -60,9 +61,10 @@ namespace suota_pgp
                                 ISuotaManager suotaManager,
                                 IStateManager stateManager)
         {
-            _fileManager = fileManager;
             _navigationService = navigationService;
             _suotaManager = suotaManager;
+
+            FileManager = fileManager;
 
             BleManager = bleManager;
             BleManager.PropertyChanged += BleManager_PropertyChanged;
@@ -86,7 +88,7 @@ namespace suota_pgp
 
         private void BeginSuota()
         {
-            _suotaManager.RunSuota(BleManager.SelectedBondedDevice, SelectedPatchFile.Name);
+            _suotaManager.RunSuota(BleManager.SelectedBondedDevice, FileManager.SelectedPatchFile.Name);
             _navigationService.NavigateAsync(nameof(SuotaView));
         }
 
@@ -95,8 +97,8 @@ namespace suota_pgp
             return StateManager.AppState == AppState.Idle &&
                    StateManager.ErrorState == ErrorState.None &&
                    BleManager.SelectedBondedDevice != null &&
-                   SelectedPatchFile != null &&
-                   !string.IsNullOrEmpty(SelectedPatchFile.Name);
+                   FileManager.SelectedPatchFile != null &&
+                   !string.IsNullOrEmpty(FileManager.SelectedPatchFile.Name);
         }
 
         #endregion
@@ -129,21 +131,9 @@ namespace suota_pgp
         /// </summary>
         public DelegateCommand RefreshFilesCommand { get; }
 
-        private async void RefreshFiles()
+        private void RefreshFiles()
         {
-            // Clear Files
-            PatchFiles.Clear();
-            SelectedPatchFile = null;
-
-            List<PatchFile> files = await _fileManager.GetFirmwareFileNames();
-
-            if (files != null)
-            {
-                foreach (PatchFile fileName in files)
-                {
-                    PatchFiles.Add(fileName);
-                }
-            }
+            FileManager.GetFirmwareFileNames();
         }
 
         private bool CanRefreshFiles()

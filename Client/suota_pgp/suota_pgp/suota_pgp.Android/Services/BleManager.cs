@@ -131,13 +131,13 @@ namespace suota_pgp.Droid.Services
             // No PGP devices found, inform the user.
             if (BondedDevices.Count == 0)
             {
-                DialogParameters dialogParameters = new DialogParameters()
+                ToastParameters toastParameters = new ToastParameters()
                 {
                     { ToastParameterKeys.Message, Properties.Resources.NoPairedGoPlusFoundString },
                     { ToastParameterKeys.Duration, Android.Widget.ToastLength.Short }
                 };
 
-                _notifyManager.ShowToast(null, dialogParameters);
+                _notifyManager.ShowToast(null, toastParameters);
             }
         }
 

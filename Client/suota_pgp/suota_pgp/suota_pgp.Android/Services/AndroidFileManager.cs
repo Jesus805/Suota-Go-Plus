@@ -1,23 +1,38 @@
-﻿using Java.IO;
+﻿using Android.Widget;
+using Java.IO;
 using Prism.Logging;
 using Prism.Mvvm;
-using Prism.Services.Dialogs;
 using suota_pgp.Data;
 using suota_pgp.Droid.Properties;
 using suota_pgp.Infrastructure;
 using suota_pgp.Services.Interface;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace suota_pgp.Droid.Services
 {
-    internal class FileManager : BindableBase, IFileManager
+    internal class AndroidFileManager : BindableBase, IFileManager
     {
         private readonly ILoggerFacade _logger;
         private readonly INotifyManager _notifyManager;
         private readonly IStateManager _stateManager;
+
+        /// <summary>
+        /// List of patch files with a .img extension.
+        /// </summary>
+        public ObservableCollection<PatchFile> PatchFiles { get; }
+
+        /// <summary>
+        /// Selected patch file.
+        /// </summary>
+        private PatchFile _selectedPatchFile;
+        public PatchFile SelectedPatchFile
+        {
+            get => _selectedPatchFile;
+            set => SetProperty(ref _selectedPatchFile, value);
+        }
 
         /// <summary>
         /// Firmware search directory.
@@ -83,7 +98,7 @@ namespace suota_pgp.Droid.Services
         /// Initialize a new instance of 'FileManager'.
         /// </summary>
         /// <param name="logger">Prism Dependency Injected ILoggerFacade.</param>
-        public FileManager(ILoggerFacade logger,
+        public AndroidFileManager(ILoggerFacade logger,
                            INotifyManager notifyManager,
                            IStateManager stateManager)
         {
@@ -92,6 +107,8 @@ namespace suota_pgp.Droid.Services
             _stateManager = stateManager;
             _path = Android.OS.Environment.ExternalStorageDirectory.AbsolutePath + "/" +
                     Resources.appFolderNameString;
+
+            PatchFiles = new ObservableCollection<PatchFile>();
 
             Patch = new byte[Constants.PatchLength];
             Header = new byte[Constants.HeaderSize];
@@ -267,56 +284,77 @@ namespace suota_pgp.Droid.Services
         /// Get all firmware files (.img).
         /// </summary>
         /// <returns>A list of firmware names</returns>
-        public async Task<List<PatchFile>> GetFirmwareFileNames()
+        public async void GetFirmwareFileNames()
         {
             if (_stateManager.AppState != AppState.Idle)
             {
-                throw new Exception("The app must be idle before getting firmware files");
+                throw new InvalidOperationException(FileManagerStrings.AppMustBeIdle);
             }
 
             _stateManager.AppState = AppState.Loading;
 
-            _logger.Log("Attempting to get firmware File names", Category.Info, Priority.None);
+            PatchFiles.Clear();
 
-            List<PatchFile> fileNames = new List<PatchFile>();
-            File dir = new File(_path);
-
-            if (!IsExternalStorageAccessible(dir))
+            try
             {
-                _logger.Log("ExternalStorage was not mounted or is readonly", Category.Exception, Priority.High);
-                return null;
-            }
+                File dir = new File(_path);
 
-            var files = await dir.ListFilesAsync();
-            if (files != null)
-            {
-                foreach (var file in files)
-                {
-                    if (file.Name.EndsWith(".img"))
-                    {
-                        fileNames.Add(new PatchFile() { Name = file.Name });
-                    }
-                }
+                string message = string.Format(FileManagerStrings.SearchingForFirmwareFiles, _path);
+                _logger.Log(message, Category.Info, Priority.None);
 
-                if (fileNames.Count == 0)
+                if (!IsExternalStorageAccessible(dir))
                 {
-                    DialogParameters dialogParameters = new DialogParameters()
+                    _logger.Log(FileManagerStrings.ExternalStorageNotMounted, Category.Exception, Priority.High);
+
+                    ToastParameters toastParameters = new ToastParameters()
                     {
-                        { ToastParameterKeys.Message, Resources.FilesNotFoundString },
-                        { ToastParameterKeys.Duration, Android.Widget.ToastLength.Short }
+                        { ToastParameterKeys.Message, Resources.StorageInaccessibleString },
+                        { ToastParameterKeys.Duration, ToastLength.Short }
                     };
 
-                    _notifyManager.ShowToast(null, dialogParameters);
+                    _notifyManager.ShowToast(null, toastParameters);
+                }
+
+                File[] files = await dir.ListFilesAsync();
+                if (files != null)
+                {
+                    foreach (File file in files)
+                    {
+                        // Firmware files only
+                        if (file.Name.EndsWith(".img"))
+                        {
+                            PatchFiles.Add(new PatchFile() { Name = file.Name });
+                        }
+                    }
+
+                    if (PatchFiles.Count == 0)
+                    {
+                        message = string.Format(Resources.FilesNotFoundString, _path);
+
+                        ToastParameters toastParameters = new ToastParameters()
+                        {
+                            { ToastParameterKeys.Message, message },
+                            { ToastParameterKeys.Duration, ToastLength.Short }
+                        };
+
+                        _notifyManager.ShowToast(null, toastParameters);
+                    }
+                }
+                else
+                {
+                    ToastParameters toastParameters = new ToastParameters()
+                    {
+                        { ToastParameterKeys.Message, Resources.StorageInaccessibleString },
+                        { ToastParameterKeys.Duration, ToastLength.Short }
+                    };
+
+                    _notifyManager.ShowToast(null, toastParameters);
                 }
             }
-            else
+            finally
             {
-                //_notifyManager.ShowShortToast("Storage inaccessible. Please make sure that storage permissions are enabled.");
+                _stateManager.AppState = AppState.Idle;
             }
-
-            _stateManager.AppState = AppState.Idle;
-
-            return fileNames;
         }
 
         /// <summary>
@@ -325,13 +363,12 @@ namespace suota_pgp.Droid.Services
         /// <param name="device">Device Info to save.</param>
         public async void Save(GoPlus device)
         {
-            _logger.Log("Attempting to Save DeviceInfo", Category.Info, Priority.None);
-
             if (device == null)
             {
-                _logger.Log("DeviceInfo was null", Category.Exception, Priority.High);
-                return;
+                throw new ArgumentNullException(nameof(device));
             }
+
+            _logger.Log("Attempting to Save DeviceInfo", Category.Info, Priority.None);
 
             File file = new File(_path);
             if (!IsExternalStorageAccessible(file))

@@ -30,7 +30,7 @@ namespace suota_pgp.Droid.Services
         /// <summary>
         /// Show a toast notification.
         /// </summary>
-        public void ShowToast(string name, IDialogParameters parameters)
+        public void ShowToast(string name, IToastParameters parameters)
         {
             ShowToastInternal(name, parameters);
         }
@@ -83,7 +83,7 @@ namespace suota_pgp.Droid.Services
         /// <summary>
         /// Show a toast notification.
         /// </summary>
-        private void ShowToastInternal(string name, IDialogParameters parameters)
+        private void ShowToastInternal(string name, IToastParameters parameters)
         {
             Activity activity;
             string message = string.Empty;

@@ -1,29 +1,25 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <Optimize>false</Optimize>
-  </PropertyGroup>
-
+  
   <ItemGroup>
     <PackageReference Include="Plugin.BLE" Version="2.1.1" />
     <PackageReference Include="Prism.Forms" Version="7.2.0.1422" />
     <PackageReference Include="Prism.Unity.Forms" Version="7.2.0.1422" />
     <PackageReference Include="Xamarin.Forms" Version="4.6.0.726" />
   </ItemGroup>
-
+  
   <ItemGroup>
-    <ProjectReference Include="..\..\suota_pgp.Infrastructure\suota_pgp.Infrastructure.csproj" />
+    <ProjectReference Include="..\suota_pgp\suota_pgp.Services.Interface\suota_pgp.Services.Interface.csproj" />
   </ItemGroup>
-
+  
   <ItemGroup>
-    <Compile Update="Properties\ExceptionMessages.Designer.cs">
+    <Compile Update="Properties\FileManagerStrings.Designer.cs">
+      <DependentUpon>FileManagerStrings.resx</DependentUpon>
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
-      <DependentUpon>ExceptionMessages.resx</DependentUpon>
     </Compile>
     <Compile Update="Properties\Resources.Designer.cs">
       <DesignTime>True</DesignTime>
@@ -31,14 +27,14 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
   </ItemGroup>
-
+  
   <ItemGroup>
-    <EmbeddedResource Update="Properties\ExceptionMessages.resx">
+    <EmbeddedResource Update="Properties\FileManagerStrings.resx">
+      <LastGenOutput>FileManagerStrings.Designer.cs</LastGenOutput>
       <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>ExceptionMessages.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Update="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
+      <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>

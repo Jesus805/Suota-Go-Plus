@@ -68,7 +68,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="MvvmCross.Plugin.BLE">
+    <PackageReference Include="Plugin.BLE">
       <Version>2.1.1</Version>
     </PackageReference>
     <PackageReference Include="Prism.Forms">
@@ -80,7 +80,7 @@
     <PackageReference Include="Xamarin.Essentials">
       <Version>1.5.3.1</Version>
     </PackageReference>
-    <PackageReference Include="Xamarin.Forms" Version="4.5.0.657" />
+    <PackageReference Include="Xamarin.Forms" Version="4.6.0.726" />
     <PackageReference Include="Xamarin.Android.Support.Design" Version="28.0.0.3" />
     <PackageReference Include="Xamarin.Android.Support.v7.AppCompat" Version="28.0.0.3" />
     <PackageReference Include="Xamarin.Android.Support.v4" Version="28.0.0.3" />
@@ -88,13 +88,18 @@
     <PackageReference Include="Xamarin.Android.Support.v7.MediaRouter" Version="28.0.0.3" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Properties\FileManagerStrings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>FileManagerStrings.resx</DependentUpon>
+    </Compile>
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="Services\BleManager.cs" />
-    <Compile Include="Services\FileManager.cs" />
+    <Compile Include="Services\AndroidFileManager.cs" />
     <Compile Include="MainActivity.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -134,6 +139,10 @@
       <Project>{1E3320C1-4EC2-450C-9164-95E968D311CA}</Project>
       <Name>suota_pgp.Infrastructure</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\suota_pgp.Services\suota_pgp.Services.csproj">
+      <Project>{4b253c36-8fde-4d11-9198-c538f7e5c2e2}</Project>
+      <Name>suota_pgp.Services</Name>
+    </ProjectReference>
     <ProjectReference Include="..\suota_pgp.Data\suota_pgp.Data.csproj">
       <Project>{b96e7d33-9cad-4df4-971e-739aca71438e}</Project>
       <Name>suota_pgp.Data</Name>
@@ -148,6 +157,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Properties\FileManagerStrings.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>FileManagerStrings.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
